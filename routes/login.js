@@ -1,7 +1,7 @@
 const express = require("express")
 const loginRouter = express.Router()
 const dbConnection = require("../config/db")
-const mysql = require("mysql")
+
 
 loginRouter.post("/", (req, res) => {
 
@@ -47,6 +47,10 @@ loginRouter.post("/", (req, res) => {
                             }
 
                             const {id, username, email, token } = updatedQueryResult[0]
+
+                            const expirationDate = new Date(Date.now() + 15 * 24 * 60 * 60 * 1000); // 15 days
+                             res.cookie('token', token, { expires: expirationDate });
+
 
 
                             res.status(200).json({message: "User logged in!", data: {id, username, email, token} })
