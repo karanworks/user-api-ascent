@@ -1,10 +1,12 @@
 const express = require("express")
 const loginRouter = express.Router()
 const dbConnection = require("../config/db")
+const mysql = require("mysql")
 
 loginRouter.post("/", (req, res) => {
 
     const { email, password} = req.body;
+
     
     const query = `SELECT * FROM register WHERE email = ?`;
     
@@ -21,20 +23,38 @@ loginRouter.post("/", (req, res) => {
     
                 if(password === result[0].password){
 
-                      const token = Math.floor(Math.random() * 10000) + 1;
+                      const LoginToken = Math.floor(Math.random() * 10000) + 1;
 
                       const updateQuery = `UPDATE register SET token = ?, isActive = ? WHERE email = ?`
 
 
-                      dbConnection.query(updateQuery, [token, 1, email ], (updateErr, updateResult) => {
+                      
+
+                      dbConnection.query(updateQuery, [LoginToken, 1, email ], (updateErr, updateResult) => {
 
                         if(updateErr){
                             return res.status(500).json({error: "Error updating token and isActive"})
                         }
 
-                        const {id, username, email, token } = result[0]
+                      
 
-                        res.status(200).json({message: "User logged in!", data: {id, username, email, token} })
+                        const updatedQuery = `SELECT id, username, email, token FROM register WHERE email = ?`
+
+                        dbConnection.query(updatedQuery, [email], (updatedQueryErr, updatedQueryResult) => {
+
+                            if(updatedQueryErr){
+                                return res.status(500).json({error: "Error fetching user details"})
+                            }
+
+                            const {id, username, email, token } = updatedQueryResult[0]
+
+
+                            res.status(200).json({message: "User logged in!", data: {id, username, email, token} })
+                        })
+
+
+
+
                       })
 
 
