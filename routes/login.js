@@ -28,8 +28,6 @@ loginRouter.post("/", (req, res) => {
                       const updateQuery = `UPDATE register SET token = ?, isActive = ? WHERE email = ?`
 
 
-                      
-
                       dbConnection.query(updateQuery, [LoginToken, 1, email ], (updateErr, updateResult) => {
 
                         if(updateErr){
@@ -38,7 +36,7 @@ loginRouter.post("/", (req, res) => {
 
                       
 
-                        const updatedQuery = `SELECT id, username, email, token FROM register WHERE email = ?`
+                        const updatedQuery = `SELECT id, username, email, token, isActive FROM register WHERE email = ?`
 
                         dbConnection.query(updatedQuery, [email], (updatedQueryErr, updatedQueryResult) => {
 
@@ -46,14 +44,15 @@ loginRouter.post("/", (req, res) => {
                                 return res.status(500).json({error: "Error fetching user details"})
                             }
 
-                            const {id, username, email, token } = updatedQueryResult[0]
+                            const {id, username, email, token, isActive } = updatedQueryResult[0]
+
 
                             const expirationDate = new Date(Date.now() + 15 * 24 * 60 * 60 * 1000); // 15 days
                              res.cookie('token', token, { expires: expirationDate });
 
 
 
-                            res.status(200).json({message: "User logged in!", data: {id, username, email, token} })
+                            res.status(200).json({message: "User logged in!", data: {id, username, email, token, isActive} })
                         })
 
 
