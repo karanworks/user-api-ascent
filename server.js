@@ -1,12 +1,11 @@
 const express = require("express");
-const dbConnection = require("./config/db")
 const app = express();
 const cors = require("cors")
 
 // routers
 const homeRouter = require("./routes/home")
-const registerRouter = require("./routes/register")
-const loginRouter = require("./routes/login");
+const adminRegisterRouter = require("./routes/adminRegister")
+const adminLoginRouter = require("./routes/adminLogin");
 
 // cookie parser
 const cookieParser = require("cookie-parser");
@@ -40,30 +39,11 @@ res.setHeader(
 app.use(cookieParser())
 
 app.use("/", homeRouter)
-app.use("/register", registerRouter)
-app.use("/login", loginRouter)
+app.use("/register", adminRegisterRouter)
+app.use("/login", adminLoginRouter)
 
 
-// register table
-dbConnection.query(
 
-    `CREATE TABLE IF NOT EXISTS register (
-        id INT AUTO_INCREMENT PRIMARY KEY,
-        username VARCHAR(50) NOT NULL,
-        email VARCHAR(100) UNIQUE,
-        password VARCHAR(100) NOT NULL,
-        token VARCHAR(100) DEFAULT NULL,
-        isActive INT DEFAULT 0,
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP )`, (err, result, fields) => {
-            if(err){
-                console.log("Database error here ->", err);
-                return
-            }
-
-            return result;
-        }
-  )
-
-app.listen(3001, () => {
+app.listen(process.env.PORT, () => {
     console.log("Server listening at port no -> 3001");
 })
