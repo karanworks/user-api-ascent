@@ -96,8 +96,6 @@ class AdminController {
     try {
       const token = req.cookies.token;
 
-      console.log("login get request.");
-
       if (token) {
         const loggedInUser = await prisma.admin.findFirst({
           where: {
@@ -135,7 +133,6 @@ class AdminController {
   async adminLogoutGet(req, res) {
     try {
       res.clearCookie("token");
-      console.log("logout api was called.");
       res.send({ message: "user logged out successflly!" });
     } catch (error) {
       console.log("error while loggin in admin ", error);

@@ -6,6 +6,7 @@ const cors = require("cors");
 const homeRouter = require("./routes/home");
 const adminAuthRouter = require("./routes/adminAuth");
 const userAuthRouter = require("./routes/userAuth");
+const adminUsersRouter = require("./routes/adminUsers");
 
 // cookie parser
 const cookieParser = require("cookie-parser");
@@ -38,6 +39,7 @@ app.use(cookieParser());
 app.use("/", homeRouter);
 app.use("/", adminAuthRouter);
 app.use("/", userAuthRouter);
+app.use("/users", adminUsersRouter);
 
 app.listen(process.env.PORT, () => {
   console.log("Server listening at port no -> 3001");
