@@ -94,12 +94,42 @@ class AdminController {
   }
   async adminLoginGet(req, res) {
     try {
-      const cookies = req.cookies.token;
-      console.log(cookies);
+      const token = req.cookies.token;
 
-      res.send("admin get request triggered");
+      console.log("login get request.");
+
+      if (token) {
+        const loggedInUser = await prisma.admin.findFirst({
+          where: {
+            token: parseInt(token),
+          },
+          select: {
+            id: true,
+            email: true,
+            password: true,
+            users: {
+              select: {
+                id: true,
+                username: true,
+                crmEmail: true,
+                agentMobile: true,
+              },
+            },
+          },
+        });
+
+        const { password, ...adminDataWithoutPassword } = loggedInUser;
+
+        res.status(200).json({
+          message: "admin logged in with token!",
+          data: { ...adminDataWithoutPassword },
+          status: "success",
+        });
+      } else {
+        res.status(401).json({ message: "admin not already logged in." });
+      }
     } catch (error) {
-      console.log("error while loggin in admin ", error);
+      console.log("error while loggin in admin, get method ", error);
     }
   }
   async adminLogoutGet(req, res) {
