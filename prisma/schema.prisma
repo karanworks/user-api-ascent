@@ -13,12 +13,27 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model admin {
+model Admin {
   id Int @id @default(autoincrement())
   username String
   email String
   password String
+  users User[]
   token Int @default(0)
   isActive Int @default(0)
   userIp String
+}
+
+model User {
+    id Int @id
+    username String
+    crmEmail String
+    crmPassword String
+    agentMobile String
+    token Int @default(0)
+    isActive Int @default(0)
+    userIp String
+    admin Admin @relation(fields: [adminId], references: [id])
+    adminId Int
+
 }
