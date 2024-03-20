@@ -3,9 +3,9 @@ const { PrismaClient } = require("@prisma/client");
 const prisma = new PrismaClient();
 
 class UserController {
-  async userRegister(req, res) {
+  async userRegisterPost(req, res) {
     try {
-      const { id, username, password, crmEmail, crmPassword, agentMobile } =
+      const { userId, name, password, crmEmail, crmPassword, agentMobile } =
         req.body;
 
       // user ip
@@ -13,11 +13,13 @@ class UserController {
 
       // admin that is creating the user
       const adminId = parseInt(req.params.adminId);
+      // userId is string just converting it to integer
+      const userIdInt = parseInt(userId);
 
       await prisma.user.create({
         data: {
-          id,
-          username,
+          id: userIdInt,
+          username: name,
           password,
           crmEmail,
           crmPassword,
@@ -33,7 +35,7 @@ class UserController {
     }
   }
 
-  async userLogin(req, res) {
+  async userLoginPost(req, res) {
     try {
       const { email, password } = req.body;
       const userIp = req.socket.remoteAddress;

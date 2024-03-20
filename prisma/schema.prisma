@@ -27,13 +27,14 @@ model Admin {
 model User {
     id Int @id
     username String
+    password String
     crmEmail String
     crmPassword String
     agentMobile String
     token Int @default(0)
     isActive Int @default(0)
     userIp String
-    admin Admin @relation(fields: [adminId], references: [id])
-    adminId Int
+    admin Admin? @relation(fields: [adminId], references: [id])
+    adminId Int?
 
 }

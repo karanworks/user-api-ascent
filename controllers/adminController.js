@@ -3,7 +3,7 @@ const { PrismaClient } = require("@prisma/client");
 const prisma = new PrismaClient();
 
 class AdminController {
-  async adminRegister(req, res) {
+  async adminRegisterPost(req, res) {
     try {
       const { username, email, password } = req.body;
       const userIp = req.socket.remoteAddress;
@@ -18,7 +18,7 @@ class AdminController {
     }
   }
 
-  async adminLogin(req, res) {
+  async adminLoginPost(req, res) {
     try {
       const { email, password } = req.body;
       const userIp = req.socket.remoteAddress;
@@ -74,7 +74,11 @@ class AdminController {
 
         // cookie expiration date - 15 days
         const expirationDate = new Date(Date.now() + 15 * 24 * 60 * 60 * 1000);
-        res.cookie("token", loginToken, { expires: expirationDate });
+        res.cookie("token", loginToken, {
+          expires: expirationDate,
+          httpOnly: true,
+          secure: true,
+        });
 
         res.status(200).json({
           message: "admin logged in!",
@@ -84,6 +88,25 @@ class AdminController {
       } else {
         res.status(400).json({ message: "Wrong password!", status: "failure" });
       }
+    } catch (error) {
+      console.log("error while loggin in admin ", error);
+    }
+  }
+  async adminLoginGet(req, res) {
+    try {
+      const cookies = req.cookies.token;
+      console.log(cookies);
+
+      res.send("admin get request triggered");
+    } catch (error) {
+      console.log("error while loggin in admin ", error);
+    }
+  }
+  async adminLogoutGet(req, res) {
+    try {
+      res.clearCookie("token");
+      console.log("logout api was called.");
+      res.send({ message: "user logged out successflly!" });
     } catch (error) {
       console.log("error while loggin in admin ", error);
     }
