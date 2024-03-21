@@ -16,7 +16,7 @@ class UserController {
       // userId is string just converting it to integer
       const userIdInt = parseInt(userId);
 
-      await prisma.user.create({
+      const newUser = await prisma.user.create({
         data: {
           id: userIdInt,
           username: name,
@@ -29,7 +29,16 @@ class UserController {
         },
       });
 
-      res.status(201).json({ message: "user registration successful" });
+      const {
+        password: excludedPassword,
+        crmPassword: excludedCrmPassword,
+        ...newUserWithoutPassword
+      } = newUser;
+
+      res.status(201).json({
+        message: "user registration successful",
+        data: newUserWithoutPassword,
+      });
     } catch (error) {
       console.log("error while registration user ->", error);
     }
