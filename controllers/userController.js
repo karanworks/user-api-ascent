@@ -103,6 +103,63 @@ class UserController {
       console.log("error while loggin in user ", error);
     }
   }
+
+  async userUpdatePatch(req, res) {
+    try {
+      const {
+        userId,
+        name,
+        password,
+        crmEmail,
+        crmPassword,
+        agentMobile,
+        adminId,
+      } = req.body;
+      const userIp = req.socket.remoteAddress;
+
+      // finding user from email
+      const userFound = await prisma.user.findFirst({
+        where: {
+          id: userId,
+        },
+      });
+    } catch (error) {
+      console.log("error while loggin in user ", error);
+    }
+  }
+  async userRemoveDelete(req, res) {
+    try {
+      const { userId } = req.params;
+
+      console.log("delete api was called");
+
+      // finding user from userId
+      const userFound = await prisma.user.findFirst({
+        where: {
+          id: parseInt(userId),
+        },
+      });
+
+      if (userFound) {
+        const deletedUser = await prisma.user.delete({
+          where: {
+            id: parseInt(userId),
+          },
+        });
+
+        res.status(201).json({
+          message: "user deleted successfully!",
+          data: { deletedUser },
+        });
+      } else {
+        res.status(404).json({ message: "user does not exist!" });
+      }
+
+      console.log("user to be deleted", userFound);
+    } catch (error) {
+      console.log("error while loggin in user ", error);
+    }
+  }
 }
 
 module.exports = new UserController();
