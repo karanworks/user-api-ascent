@@ -59,14 +59,7 @@ class AdminController {
           },
 
           include: {
-            users: {
-              select: {
-                id: true,
-                username: true,
-                crmEmail: true,
-                agentMobile: true,
-              },
-            },
+            users: true,
           },
         });
 

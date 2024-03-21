@@ -29,15 +29,9 @@ class UserController {
         },
       });
 
-      const {
-        password: excludedPassword,
-        crmPassword: excludedCrmPassword,
-        ...newUserWithoutPassword
-      } = newUser;
-
       res.status(201).json({
         message: "user registration successful",
-        data: newUserWithoutPassword,
+        data: newUser,
       });
     } catch (error) {
       console.log("error while registration user ->", error);
@@ -106,25 +100,38 @@ class UserController {
 
   async userUpdatePatch(req, res) {
     try {
-      const {
-        userId,
-        name,
-        password,
-        crmEmail,
-        crmPassword,
-        agentMobile,
-        adminId,
-      } = req.body;
-      const userIp = req.socket.remoteAddress;
+      const { userId, name, password, crmEmail, crmPassword, agentMobile } =
+        req.body;
+
+      const { userId: editUserid } = req.params;
 
       // finding user from email
       const userFound = await prisma.user.findFirst({
         where: {
-          id: userId,
+          id: parseInt(editUserid),
         },
       });
+
+      if (userFound) {
+        const updatedData = await prisma.user.update({
+          where: {
+            id: parseInt(editUserid),
+          },
+          data: {
+            id: parseInt(userId),
+            username: name,
+            password,
+            crmEmail,
+            crmPassword,
+            agentMobile,
+          },
+        });
+        res.json({ message: "user updated successfully!", data: updatedData });
+      } else {
+        res.json({ message: "user not found!" });
+      }
     } catch (error) {
-      console.log("error while loggin in user ", error);
+      console.log("error while updating user ", error);
     }
   }
   async userRemoveDelete(req, res) {
@@ -157,7 +164,7 @@ class UserController {
 
       console.log("user to be deleted", userFound);
     } catch (error) {
-      console.log("error while loggin in user ", error);
+      console.log("error while deleting user ", error);
     }
   }
 }

@@ -16,14 +16,7 @@ adminUsersRouter.get("/", async (req, res) => {
           id: true,
           email: true,
           password: true,
-          users: {
-            select: {
-              id: true,
-              username: true,
-              crmEmail: true,
-              agentMobile: true,
-            },
-          },
+          users: true,
         },
       });
 
