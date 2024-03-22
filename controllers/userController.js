@@ -103,19 +103,19 @@ class UserController {
       const { userId, name, password, crmEmail, crmPassword, agentMobile } =
         req.body;
 
-      const { userId: editUserid } = req.params;
+      const { userId: editUserId } = req.params;
 
-      // finding user from email
+      // finding user from id
       const userFound = await prisma.user.findFirst({
         where: {
-          id: parseInt(editUserid),
+          id: parseInt(editUserId),
         },
       });
 
       if (userFound) {
         const updatedData = await prisma.user.update({
           where: {
-            id: parseInt(editUserid),
+            id: parseInt(editUserId),
           },
           data: {
             id: parseInt(userId),
@@ -126,6 +126,7 @@ class UserController {
             agentMobile,
           },
         });
+
         res.json({ message: "user updated successfully!", data: updatedData });
       } else {
         res.json({ message: "user not found!" });
@@ -137,8 +138,6 @@ class UserController {
   async userRemoveDelete(req, res) {
     try {
       const { userId } = req.params;
-
-      console.log("delete api was called");
 
       // finding user from userId
       const userFound = await prisma.user.findFirst({
@@ -161,8 +160,6 @@ class UserController {
       } else {
         res.status(404).json({ message: "user does not exist!" });
       }
-
-      console.log("user to be deleted", userFound);
     } catch (error) {
       console.log("error while deleting user ", error);
     }

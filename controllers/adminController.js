@@ -60,6 +60,7 @@ class AdminController {
 
           include: {
             users: true,
+            campaigns: true,
           },
         });
 
@@ -106,6 +107,7 @@ class AdminController {
                 agentMobile: true,
               },
             },
+            campaigns: true,
           },
         });
 

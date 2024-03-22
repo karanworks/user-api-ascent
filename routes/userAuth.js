@@ -2,11 +2,14 @@ const express = require("express");
 const userAuthRouter = express.Router({ mergeParams: true });
 const userController = require("../controllers/userController");
 
-userAuthRouter.post("/:adminId/login", userController.userLoginPost);
-userAuthRouter.post("/:adminId/register", userController.userRegisterPost);
-userAuthRouter.patch("/:adminId/:userId/edit", userController.userUpdatePatch);
+userAuthRouter.post("/:adminId/user/login", userController.userLoginPost);
+userAuthRouter.post("/:adminId/user/register", userController.userRegisterPost);
+userAuthRouter.patch(
+  "/:adminId/user/:userId/edit",
+  userController.userUpdatePatch
+);
 userAuthRouter.delete(
-  "/:adminId/:userId/delete",
+  "/:adminId/user/:userId/delete",
   userController.userRemoveDelete
 );
 

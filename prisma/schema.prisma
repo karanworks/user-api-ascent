@@ -18,6 +18,7 @@ model Admin {
   username String
   email String
   password String
+  campaigns Campaign[]
   users User[]
   token Int @default(0)
   isActive Int @default(0)
@@ -37,4 +38,28 @@ model User {
     admin Admin? @relation(fields: [adminId], references: [id])
     adminId Int?
 
+}
+
+model Campaign {
+  id Int @id @default(autoincrement())
+  campaignName String 
+  campaignDescription String
+  campaignType String
+  callback Int @default(0)
+  dnc Int @default(0)
+  amd Int @default(0)
+  fields CRMField[]
+  adminId Int?
+  admin Admin? @relation(fields: [adminId], references: [id])
+}
+
+model CRMField{
+  id Int @id @default(autoincrement())
+  caption String
+  Type String
+  Required Boolean
+  ReadOnly Boolean
+  Position Int
+  campaignId Int?
+  campaign Campaign? @relation(fields: [campaignId], references: [id])
 }

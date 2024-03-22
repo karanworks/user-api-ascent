@@ -7,9 +7,11 @@ const homeRouter = require("./routes/home");
 const adminAuthRouter = require("./routes/adminAuth");
 const userAuthRouter = require("./routes/userAuth");
 const adminUsersRouter = require("./routes/adminUsers");
+const campaignRouter = require("./routes/campaign");
 
 // cookie parser
 const cookieParser = require("cookie-parser");
+const adminCampaignsRouter = require("./routes/adminCampaigns");
 
 // parsing json
 app.use(express.json());
@@ -43,6 +45,8 @@ app.use("/", homeRouter);
 app.use("/", adminAuthRouter);
 app.use("/", userAuthRouter);
 app.use("/users", adminUsersRouter);
+app.use("/", campaignRouter);
+app.use("/campaigns", adminCampaignsRouter);
 
 app.listen(process.env.PORT, () => {
   console.log("Server listening at port no -> 3001");
