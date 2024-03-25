@@ -26,6 +26,7 @@ class CampaignController {
       res.status(201).json({
         message: "new campaign created!",
         data: newCampaign,
+        status: "success",
       });
     } catch (error) {
       console.log("error while creating campaign ->", error);
@@ -59,9 +60,10 @@ class CampaignController {
         res.json({
           message: "campaign updated successfully!",
           data: updatedData,
+          status: "success",
         });
       } else {
-        res.json({ message: "campaign not found!" });
+        res.json({ message: "campaign not found!", status: "failure" });
       }
     } catch (error) {
       console.log("error while updating campaign ", error);
@@ -90,9 +92,12 @@ class CampaignController {
         res.status(201).json({
           message: "campaign deleted successfully!",
           data: { deletedCampaign },
+          status: "success",
         });
       } else {
-        res.status(404).json({ message: "campaign does not exist!" });
+        res
+          .status(404)
+          .json({ message: "campaign does not exist!", status: "failure" });
       }
     } catch (error) {
       console.log("error while deleting campaign ", error);

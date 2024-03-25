@@ -12,7 +12,9 @@ class AdminController {
         data: { username, email, password, userIp },
       });
 
-      res.status(201).json({ message: "admin registered successfully!" });
+      res
+        .status(201)
+        .json({ message: "admin registered successfully!", status: "success" });
     } catch (error) {
       console.log("error while registration admin ->", error);
     }
@@ -119,7 +121,9 @@ class AdminController {
           status: "success",
         });
       } else {
-        res.status(401).json({ message: "admin not already logged in." });
+        res
+          .status(401)
+          .json({ message: "admin not already logged in.", status: "failure" });
       }
     } catch (error) {
       console.log("error while loggin in admin, get method ", error);

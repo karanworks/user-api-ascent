@@ -3,7 +3,7 @@ const { PrismaClient } = require("@prisma/client");
 const prisma = new PrismaClient();
 
 class UserController {
-  async userRegisterPost(req, res) {
+  async userRegisterPost(req, res, next) {
     try {
       const { userId, name, password, crmEmail, crmPassword, agentMobile } =
         req.body;
@@ -16,23 +16,52 @@ class UserController {
       // userId is string just converting it to integer
       const userIdInt = parseInt(userId);
 
-      const newUser = await prisma.user.create({
-        data: {
-          id: userIdInt,
-          username: name,
-          password,
-          crmEmail,
-          crmPassword,
-          agentMobile,
-          userIp,
-          adminId,
+      const alreadyRegistered = await prisma.user.findFirst({
+        where: {
+          OR: [{ id: userIdInt }, { crmEmail }, { agentMobile }],
         },
       });
 
-      res.status(201).json({
-        message: "user registration successful",
-        data: newUser,
-      });
+      if (alreadyRegistered) {
+        if (alreadyRegistered.id === userIdInt) {
+          res.json({
+            message: "User already registered with this user id.",
+            data: alreadyRegistered,
+            status: "failure",
+          });
+        } else if (alreadyRegistered.crmEmail === crmEmail) {
+          res.json({
+            message: "User already registered with this CRM Email.",
+            data: alreadyRegistered,
+            status: "failure",
+          });
+        } else if (alreadyRegistered.agentMobile === agentMobile) {
+          res.json({
+            message: "User already registered with this mobile no.",
+            data: alreadyRegistered,
+            status: "failure",
+          });
+        }
+      } else {
+        const newUser = await prisma.user.create({
+          data: {
+            id: userIdInt,
+            username: name,
+            password,
+            crmEmail,
+            crmPassword,
+            agentMobile,
+            userIp,
+            adminId,
+          },
+        });
+        console.log("user registration successful");
+
+        res.status(201).json({
+          message: "user registration successful",
+          data: newUser,
+        });
+      }
     } catch (error) {
       console.log("error while registration user ->", error);
     }
