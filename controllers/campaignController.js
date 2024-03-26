@@ -2,10 +2,6 @@ const { PrismaClient } = require("@prisma/client");
 
 const prisma = new PrismaClient();
 
-// Abhi campaign model migrate nhi kiya hai
-// Abhi campaign model migrate nhi kiya hai
-// Abhi campaign model migrate nhi kiya hai
-// Abhi campaign model migrate nhi kiya hai
 class CampaignController {
   async campaignCreatePost(req, res) {
     try {

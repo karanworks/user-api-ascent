@@ -37,7 +37,7 @@ class UserController {
           });
         } else if (alreadyRegistered.agentMobile === agentMobile) {
           res.json({
-            message: "User already registered with this mobile no.",
+            message: "User already registered with this Mobile no.",
             data: alreadyRegistered,
             status: "failure",
           });
@@ -55,7 +55,7 @@ class UserController {
             adminId,
           },
         });
-        console.log("user registration successful");
+        
 
         res.status(201).json({
           message: "user registration successful",

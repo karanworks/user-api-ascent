@@ -48,7 +48,7 @@ model Campaign {
   callback Int @default(0)
   dnc Int @default(0)
   amd Int @default(0)
-  fields CRMField[]
+  crmFields CRMField[]
   adminId Int?
   admin Admin? @relation(fields: [adminId], references: [id])
 }
@@ -56,10 +56,10 @@ model Campaign {
 model CRMField{
   id Int @id @default(autoincrement())
   caption String @unique
-  Type String
-  Required Boolean
-  ReadOnly Boolean
-  Position Int
+  type String
+  required Boolean
+  readOnly Boolean
+  position Int
   campaignId Int?
   campaign Campaign? @relation(fields: [campaignId], references: [id])
 }

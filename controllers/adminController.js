@@ -62,7 +62,18 @@ class AdminController {
 
           include: {
             users: true,
-            campaigns: true,
+            campaigns: {
+              select: {
+                id: true,
+                campaignName: true,
+                campaignDescription: true,
+                campaignType: true,
+                callback: true,
+                dnc: true,
+                amd: true,
+                crmFields: true,
+              },
+            },
           },
         });
 
@@ -109,7 +120,18 @@ class AdminController {
                 agentMobile: true,
               },
             },
-            campaigns: true,
+            campaigns: {
+              select: {
+                id: true,
+                campaignName: true,
+                campaignDescription: true,
+                campaignType: true,
+                callback: true,
+                dnc: true,
+                amd: true,
+                crmFields: true,
+              },
+            },
           },
         });
 
