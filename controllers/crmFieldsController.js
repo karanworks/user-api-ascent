@@ -15,8 +15,8 @@ class CRMFieldsController {
         data: {
           caption,
           type,
-          required,
-          readOnly,
+          required: required === "true" ? true : false,
+          readOnly: readOnly === "true" ? true : false,
           position,
           campaignId: parseInt(campaignId),
         },
@@ -51,8 +51,8 @@ class CRMFieldsController {
           data: {
             caption,
             type,
-            required,
-            readOnly,
+            required: required === "true" ? true : false,
+            readOnly: readOnly === "true" ? true : false,
             position,
           },
         });

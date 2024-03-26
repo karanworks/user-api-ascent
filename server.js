@@ -10,6 +10,7 @@ const adminUsersRouter = require("./routes/adminUsers");
 const adminCampaignsRouter = require("./routes/adminCampaigns");
 const campaignRouter = require("./routes/campaign");
 const CRMFieldsRouter = require("./routes/crmFields");
+const adminCrmFieldsRouter = require("./routes/adminCrmFields");
 
 // cookie parser
 const cookieParser = require("cookie-parser");
@@ -50,6 +51,7 @@ app.use("/users", adminUsersRouter);
 app.use("/", campaignRouter);
 app.use("/campaigns", adminCampaignsRouter);
 app.use("/", CRMFieldsRouter);
+app.use("/", adminCrmFieldsRouter);
 
 // app.use(handleError);
 
