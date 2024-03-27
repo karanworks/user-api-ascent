@@ -42,7 +42,7 @@ model User {
 
 model Campaign {
   id Int @id @default(autoincrement())
-  campaignName String @unique
+  campaignName String
   campaignDescription String
   campaignType String
   callback Int @default(0)
@@ -55,7 +55,7 @@ model Campaign {
 
 model CRMField{
   id Int @id @default(autoincrement())
-  caption String @unique
+  caption String 
   type String
   required Boolean
   readOnly Boolean
