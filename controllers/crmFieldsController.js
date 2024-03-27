@@ -77,7 +77,8 @@ class CRMFieldsController {
           .findFirst({
             where: { id: parseInt(campaignId) },
           })
-          .crmFields();
+          .crmFields()
+          .then((fields) => fields.sort((a, b) => a.position - b.position));
 
         res.json({
           message:
@@ -204,7 +205,8 @@ class CRMFieldsController {
             .findFirst({
               where: { id: parseInt(campaignId) },
             })
-            .crmFields();
+            .crmFields()
+            .then((fields) => fields.sort((a, b) => a.position - b.position));
 
           res.json({
             message: "CRM field updated successfully!",
@@ -212,6 +214,12 @@ class CRMFieldsController {
             status: "positions-updated",
           });
         } else if (crmFieldFound.position > position) {
+          console.log(
+            "crm field ki current position ->",
+            crmFieldFound.position,
+            "crm field jis position par jani hai",
+            position
+          );
           const prevField = await prisma.CRMField.findFirst({
             where: {
               position: position,
@@ -219,7 +227,7 @@ class CRMFieldsController {
           });
 
           console.log("prev field ->", prevField);
-          await prisma.CRMField.update({
+          const prevFieldUpdated = await prisma.CRMField.update({
             where: {
               id: prevField.id,
             },
@@ -230,7 +238,9 @@ class CRMFieldsController {
             },
           });
 
-          await prisma.CRMField.update({
+          console.log("previous field updated ->", prevFieldUpdated);
+
+          const currentFieldUpdated = await prisma.CRMField.update({
             where: {
               id: crmFieldFound.id,
             },
@@ -241,12 +251,17 @@ class CRMFieldsController {
             },
           });
 
+          console.log("current field updated ->", currentFieldUpdated);
+
           // Retrieve all CRM fields for the campaign after position update
           const allCampaignFields = await prisma.campaign
             .findFirst({
               where: { id: parseInt(campaignId) },
             })
-            .crmFields();
+            .crmFields()
+            .then((fields) => fields.sort((a, b) => a.position - b.position));
+
+          console.log("all campaign fields ->", allCampaignFields);
 
           res.json({
             message: "CRM field updated successfully!",
@@ -273,7 +288,8 @@ class CRMFieldsController {
           .findFirst({
             where: { id: parseInt(campaignId) },
           })
-          .crmFields();
+          .crmFields()
+          .then((fields) => fields.sort((a, b) => a.position - b.position));
 
         res.json({
           message: "CRM field updated successfully!",
@@ -301,15 +317,13 @@ class CRMFieldsController {
       });
 
       if (crmFieldFound) {
-        const deletedField = await prisma.CRMField.delete({
+        await prisma.CRMField.delete({
           where: {
             id: parseInt(crmFieldId),
           },
         });
 
-        console.log("deleted field ->", deletedField);
-
-        const updatedPositions = await prisma.CRMField.updateMany({
+        await prisma.CRMField.updateMany({
           where: {
             position: {
               gt: crmFieldFound.position,
@@ -322,15 +336,12 @@ class CRMFieldsController {
           },
         });
 
-        console.log("updated positions after delete ->", updatedPositions);
-
         const allCampaignFields = await prisma.campaign
           .findFirst({
             where: { id: parseInt(campaignId) },
           })
-          .crmFields();
-
-        console.log("all positions after delete ->", allCampaignFields);
+          .crmFields()
+          .then((fields) => fields.sort((a, b) => a.position - b.position));
 
         res.status(201).json({
           message: "crmField deleted successfully!",

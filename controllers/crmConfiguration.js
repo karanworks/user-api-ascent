@@ -4,7 +4,7 @@ class CRMConfiguration {
       const token = req.cookies.token;
 
       if (token) {
-        const loggedInUser = await prisma.admin.findFirst({
+        const userWithCrmFields = await prisma.admin.findFirst({
           where: {
             token: parseInt(token),
           },
@@ -14,13 +14,19 @@ class CRMConfiguration {
             password: true,
             campaigns: {
               select: {
-                crmFields: true,
+                crmFields: {
+                  orderBy: {
+                    position: "asc",
+                  },
+                },
               },
             },
           },
         });
 
-        const { password, ...adminDataWithoutPassword } = loggedInUser;
+        console.log("sorted crm fields ->", userWithCrmFields.campaigns);
+
+        const { password, ...adminDataWithoutPassword } = userWithCrmFields;
 
         res.status(200).json({
           message: "crm fields fetched!",
