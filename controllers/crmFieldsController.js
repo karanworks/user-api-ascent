@@ -256,7 +256,7 @@ class CRMFieldsController {
         }
       } else {
         // If there are no conflicts, simply update the CRM field
-        const updatedData = await prisma.CRMField.update({
+        await prisma.CRMField.update({
           where: {
             id: parseInt(crmFieldId),
           },
@@ -269,9 +269,15 @@ class CRMFieldsController {
           },
         });
 
+        const allCampaignFields = await prisma.campaign
+          .findFirst({
+            where: { id: parseInt(campaignId) },
+          })
+          .crmFields();
+
         res.json({
           message: "CRM field updated successfully!",
-          data: updatedData,
+          data: allCampaignFields,
           status: "success",
         });
       }
@@ -285,7 +291,7 @@ class CRMFieldsController {
 
   async crmFieldsRemoveDelete(req, res) {
     try {
-      const { crmFieldId } = req.params;
+      const { crmFieldId, campaignId } = req.params;
 
       // finding crm field from crmFieldId
       const crmFieldFound = await prisma.CRMField.findFirst({
@@ -295,15 +301,40 @@ class CRMFieldsController {
       });
 
       if (crmFieldFound) {
-        const deletedCampaign = await prisma.CRMField.delete({
+        const deletedField = await prisma.CRMField.delete({
           where: {
             id: parseInt(crmFieldId),
           },
         });
 
+        console.log("deleted field ->", deletedField);
+
+        const updatedPositions = await prisma.CRMField.updateMany({
+          where: {
+            position: {
+              gt: crmFieldFound.position,
+            },
+          },
+          data: {
+            position: {
+              decrement: 1,
+            },
+          },
+        });
+
+        console.log("updated positions after delete ->", updatedPositions);
+
+        const allCampaignFields = await prisma.campaign
+          .findFirst({
+            where: { id: parseInt(campaignId) },
+          })
+          .crmFields();
+
+        console.log("all positions after delete ->", allCampaignFields);
+
         res.status(201).json({
           message: "crmField deleted successfully!",
-          data: { deletedCampaign },
+          data: allCampaignFields,
           status: "success",
         });
       } else {
