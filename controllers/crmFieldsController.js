@@ -25,18 +25,6 @@ class CRMFieldsController {
         },
       });
 
-      // const campaign = admin?.campaigns?.filter((campaign) => {
-      //   if (parseInt(campaignId) === campaign.id) {
-      //     return campaign;
-      //   }
-      // });
-
-      // const alreadyExistedField = campaign[0]?.crmFields?.filter((crmField) => {
-      //   if (crmField.caption === caption) {
-      //     return crmField;
-      //   }
-      // });
-
       const campaign = admin?.campaigns?.find(
         (campaign) => parseInt(campaignId) === campaign.id
       );
@@ -47,11 +35,6 @@ class CRMFieldsController {
 
       const alreadyExistOnSamePosition = campaign?.crmFields?.find(
         (crmField) => crmField.position === position
-      );
-
-      console.log(
-        "already exist on same position ->",
-        alreadyExistOnSamePosition
       );
 
       if (alreadyExistedField) {
@@ -124,19 +107,155 @@ class CRMFieldsController {
       console.log("error while creating crm field ->", error);
     }
   }
+
   async crmFieldsUpdatePatch(req, res) {
     try {
       const { caption, type, required, readOnly, position } = req.body;
-      const { crmFieldId } = req.params;
+      const { crmFieldId, adminId } = req.params;
+      let captionUpdated = false;
 
-      // finding crmfield from id
+      // Find the CRM field from the ID
       const crmFieldFound = await prisma.CRMField.findFirst({
         where: {
           id: parseInt(crmFieldId),
         },
       });
 
-      if (crmFieldFound) {
+      if (!crmFieldFound) {
+        return res.json({ message: "CRM field not found!", status: "failure" });
+      }
+
+      const { campaignId } = crmFieldFound;
+
+      // Get the admin and campaign information
+      const admin = await prisma.admin.findFirst({
+        where: {
+          id: parseInt(adminId),
+        },
+        select: {
+          id: true,
+          username: true,
+          campaigns: {
+            select: {
+              id: true,
+              campaignName: true,
+              crmFields: true,
+            },
+          },
+        },
+      });
+
+      const campaign = admin?.campaigns?.find(
+        (campaign) => parseInt(campaignId) === campaign.id
+      );
+
+      const alreadyExistedField = campaign?.crmFields?.find(
+        (crmField) => crmField.caption === caption
+      );
+
+      const alreadyExistOnSamePosition = campaign?.crmFields?.find(
+        (crmField) =>
+          crmField.position === position && crmField.id !== parseInt(crmFieldId)
+      );
+
+      if (crmFieldFound.caption === caption) {
+        captionUpdated = true;
+      }
+
+      if (!captionUpdated && alreadyExistedField) {
+        return res.json({
+          message:
+            "Field with the same caption already exists in this campaign.",
+          data: alreadyExistedField,
+          status: "duplicate",
+        });
+      } else if (alreadyExistOnSamePosition) {
+        if (crmFieldFound.position < position) {
+          const nextField = await prisma.CRMField.findFirst({
+            where: {
+              position,
+            },
+          });
+
+          await prisma.CRMField.update({
+            where: {
+              id: nextField.id,
+            },
+            data: {
+              position: {
+                decrement: 1,
+              },
+            },
+          });
+
+          await prisma.CRMField.update({
+            where: {
+              id: crmFieldFound.id,
+            },
+            data: {
+              position: {
+                increment: 1,
+              },
+            },
+          });
+
+          // Retrieve all CRM fields for the campaign after position update
+          const allCampaignFields = await prisma.campaign
+            .findFirst({
+              where: { id: parseInt(campaignId) },
+            })
+            .crmFields();
+
+          res.json({
+            message: "CRM field updated successfully!",
+            data: allCampaignFields,
+            status: "positions-updated",
+          });
+        } else if (crmFieldFound.position > position) {
+          const prevField = await prisma.CRMField.findFirst({
+            where: {
+              position: position,
+            },
+          });
+
+          console.log("prev field ->", prevField);
+          await prisma.CRMField.update({
+            where: {
+              id: prevField.id,
+            },
+            data: {
+              position: {
+                increment: 1,
+              },
+            },
+          });
+
+          await prisma.CRMField.update({
+            where: {
+              id: crmFieldFound.id,
+            },
+            data: {
+              position: {
+                decrement: 1,
+              },
+            },
+          });
+
+          // Retrieve all CRM fields for the campaign after position update
+          const allCampaignFields = await prisma.campaign
+            .findFirst({
+              where: { id: parseInt(campaignId) },
+            })
+            .crmFields();
+
+          res.json({
+            message: "CRM field updated successfully!",
+            data: allCampaignFields,
+            status: "positions-updated",
+          });
+        }
+      } else {
+        // If there are no conflicts, simply update the CRM field
         const updatedData = await prisma.CRMField.update({
           where: {
             id: parseInt(crmFieldId),
@@ -151,15 +270,16 @@ class CRMFieldsController {
         });
 
         res.json({
-          message: "crm field updated successfully!",
+          message: "CRM field updated successfully!",
           data: updatedData,
           status: "success",
         });
-      } else {
-        res.json({ message: "crm field not found!", status: "failure" });
       }
     } catch (error) {
-      console.log("error while updating crm field ", error);
+      console.log("Error while updating CRM field: ", error);
+      res
+        .status(500)
+        .json({ message: "Internal server error", status: "error" });
     }
   }
 

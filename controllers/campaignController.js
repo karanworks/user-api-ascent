@@ -69,8 +69,6 @@ class CampaignController {
     try {
       const { campaignId } = req.params;
 
-      console.log("delete campaign api triggered ->", campaignId);
-
       // finding campaign from campaignId
       const campaignFound = await prisma.campaign.findFirst({
         where: {
