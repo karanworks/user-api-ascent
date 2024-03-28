@@ -172,6 +172,9 @@ class CRMFieldsController {
         });
       } else if (alreadyExistOnSamePosition) {
         if (crmFieldFound.position < position) {
+          console.log(
+            "if position to be changed is greater than current position."
+          );
           const nextField = await prisma.CRMField.findFirst({
             where: {
               position,
@@ -183,9 +186,7 @@ class CRMFieldsController {
               id: nextField.id,
             },
             data: {
-              position: {
-                decrement: 1,
-              },
+              position: crmFieldFound.position,
             },
           });
 
@@ -194,9 +195,7 @@ class CRMFieldsController {
               id: crmFieldFound.id,
             },
             data: {
-              position: {
-                increment: 1,
-              },
+              position: nextField.position,
             },
           });
 
@@ -215,10 +214,7 @@ class CRMFieldsController {
           });
         } else if (crmFieldFound.position > position) {
           console.log(
-            "crm field ki current position ->",
-            crmFieldFound.position,
-            "crm field jis position par jani hai",
-            position
+            "if position to be changed is smaller than current position."
           );
           const prevField = await prisma.CRMField.findFirst({
             where: {
@@ -226,32 +222,23 @@ class CRMFieldsController {
             },
           });
 
-          console.log("prev field ->", prevField);
           const prevFieldUpdated = await prisma.CRMField.update({
             where: {
               id: prevField.id,
             },
             data: {
-              position: {
-                increment: 1,
-              },
+              position: crmFieldFound.position,
             },
           });
-
-          console.log("previous field updated ->", prevFieldUpdated);
 
           const currentFieldUpdated = await prisma.CRMField.update({
             where: {
               id: crmFieldFound.id,
             },
             data: {
-              position: {
-                decrement: 1,
-              },
+              position: prevField.position,
             },
           });
-
-          console.log("current field updated ->", currentFieldUpdated);
 
           // Retrieve all CRM fields for the campaign after position update
           const allCampaignFields = await prisma.campaign
@@ -260,8 +247,6 @@ class CRMFieldsController {
             })
             .crmFields()
             .then((fields) => fields.sort((a, b) => a.position - b.position));
-
-          console.log("all campaign fields ->", allCampaignFields);
 
           res.json({
             message: "CRM field updated successfully!",
