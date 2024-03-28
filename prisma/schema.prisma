@@ -28,7 +28,6 @@ model Admin {
 model User {
     id Int @id
     username String
-    password String
     crmEmail String @unique
     crmPassword String
     agentMobile String @unique
@@ -37,6 +36,7 @@ model User {
     userIp String
     admin Admin? @relation(fields: [adminId], references: [id])
     adminId Int?
+    role Int
 
 }
 
@@ -63,3 +63,62 @@ model CRMField{
   campaignId Int?
   campaign Campaign? @relation(fields: [campaignId], references: [id])
 }
+
+model Menu{
+  id Int id @default(autoincrement())
+  name String
+  icon String
+  status Int
+  sequence Int
+}
+
+model SubMenu {
+  id Int id @default(autoincrement())
+  name String
+  status Int
+  redirect Boolean
+  url String?
+  menuId Int
+  menu Menu? @relation(fields: [menuId], references: [id])
+}
+
+model SubMenuAssign{
+   id Int id @default(autoincrement())
+   menuId Int
+   status Int
+   roleId Int
+   role Role @relation(fields: [subMenuId], references: [id])
+}
+
+model SuperSubMenu{
+  id Int id @default(autoincrement())
+  name String
+  url String
+  status Int
+  subMenuId  Int
+}
+
+model SuperSubMenuAssign{
+   id Int id @default(autoincrement())
+   subMenuId Int
+   status Int
+   roleId Int
+   role Role @relation(fields: [subMenuId], references: [id])
+}
+
+
+model Role {
+  id Int id @default(autoincrement())
+  name Int
+  status Int
+}
+
+model RoleAssign{
+  id Int id @default(autoincrement())
+  roleId Int
+  role Role @relation(fields: [roleId], references: [id])
+  userId Int
+  user User @relation(fields: [userId], references: [id])
+
+}
+

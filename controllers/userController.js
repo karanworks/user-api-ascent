@@ -5,7 +5,7 @@ const prisma = new PrismaClient();
 class UserController {
   async userRegisterPost(req, res, next) {
     try {
-      const { userId, name, password, crmEmail, crmPassword, agentMobile } =
+      const { userId, name, role, crmEmail, crmPassword, agentMobile } =
         req.body;
 
       // user ip
@@ -47,7 +47,7 @@ class UserController {
           data: {
             id: userIdInt,
             username: name,
-            password,
+            role,
             crmEmail,
             crmPassword,
             agentMobile,
@@ -55,7 +55,6 @@ class UserController {
             adminId,
           },
         });
-        
 
         res.status(201).json({
           message: "user registration successful",
@@ -69,18 +68,18 @@ class UserController {
 
   async userLoginPost(req, res) {
     try {
-      const { email, password } = req.body;
+      const { userId, crmPassword } = req.body;
       const userIp = req.socket.remoteAddress;
 
       // finding user from email
       const userFound = await prisma.admin.findFirst({
         where: {
-          email,
+          userId,
         },
         select: {
           id: true,
-          email: true,
-          password: true,
+          crmEmail: true,
+          crmPassowrd: true,
         },
       });
 
@@ -89,7 +88,7 @@ class UserController {
           message: "no user found with this email",
           status: "failure",
         });
-      } else if (password === adminFound.password) {
+      } else if (crmPassword === userFound.crmPassowrd) {
         // generates a number between 1000 and 10000 to be used as token
         const loginToken = Math.floor(
           Math.random() * (10000 - 1000 + 1) + 1000
@@ -108,7 +107,8 @@ class UserController {
           },
         });
 
-        const { password, ...userDataWithoutPassword } = updatedUser;
+        // changed this because removed password and now working with crmPassword
+        // const { password, ...userDataWithoutPassword } = updatedUser;
 
         // cookie expiration date - 15 days
         const expirationDate = new Date(Date.now() + 15 * 24 * 60 * 60 * 1000);
@@ -116,7 +116,7 @@ class UserController {
 
         res.status(200).json({
           message: "user logged in!",
-          data: { ...userDataWithoutPassword },
+          data: updatedUser,
           status: "success",
         });
       } else {
@@ -129,8 +129,7 @@ class UserController {
 
   async userUpdatePatch(req, res) {
     try {
-      const { userId, name, password, crmEmail, crmPassword, agentMobile } =
-        req.body;
+      const { userId, name, crmEmail, crmPassword, agentMobile } = req.body;
 
       const { userId: editUserId } = req.params;
 
@@ -149,7 +148,6 @@ class UserController {
           data: {
             id: parseInt(userId),
             username: name,
-            password,
             crmEmail,
             crmPassword,
             agentMobile,

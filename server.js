@@ -14,7 +14,6 @@ const adminCrmFieldsRouter = require("./routes/adminCrmFields");
 
 // cookie parser
 const cookieParser = require("cookie-parser");
-const handleError = require("./utils/handleError");
 
 // parsing json
 app.use(express.json());
@@ -53,8 +52,6 @@ app.use("/campaigns", adminCampaignsRouter);
 app.use("/", CRMFieldsRouter);
 app.use("/", adminCrmFieldsRouter);
 
-// app.use(handleError);
-
-app.listen(process.env.PORT, () => {
-  console.log("Server listening at port no -> 3001");
+app.listen(process.env.PORT || 3001, () => {
+  console.log(`Server listening at port no -> ${process.env.PORT}`);
 });
