@@ -14,29 +14,34 @@ datasource db {
 }
 
 model Admin {
-  id Int @id @default(autoincrement())
+  id       Int      @id @default(autoincrement())
   username String
-  email String
+  email    String
   password String
   campaigns Campaign[]
-  users User[]
+  users    User[]
+  token    Int      @default(0)
+  isActive Int      @default(0)
+  userIp   String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now())
+}
+
+
+model User {
+  id Int @id 
+  username String
+  crmEmail String @unique
+  crmPassword String
+  agentMobile String @unique
   token Int @default(0)
   isActive Int @default(0)
   userIp String
-}
-
-model User {
-    id Int @id
-    username String
-    crmEmail String @unique
-    crmPassword String
-    agentMobile String @unique
-    token Int @default(0)
-    isActive Int @default(0)
-    userIp String
-    admin Admin? @relation(fields: [adminId], references: [id])
-    adminId Int?
-    role Int
+  admin Admin? @relation(fields: [adminId], references: [id])
+  adminId Int?
+  role Int
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now())
 
 }
 
@@ -51,6 +56,9 @@ model Campaign {
   crmFields CRMField[]
   adminId Int?
   admin Admin? @relation(fields: [adminId], references: [id])
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now())
+
 }
 
 model CRMField{
@@ -62,6 +70,9 @@ model CRMField{
   position Int
   campaignId Int?
   campaign Campaign? @relation(fields: [campaignId], references: [id])
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now())
+
 }
 
 model Menu{
@@ -71,52 +82,51 @@ model Menu{
   status Int
   sequence Int
   subMenus SubMenu[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now())
+ 
 }
 
 model SubMenu {
   id Int @id @default(autoincrement())
   name String
   status Int
-  redirect Boolean
   url String?
   menuId Int?
   menu Menu? @relation(fields: [menuId], references: [id])
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now())
+  
   
 }
 
 model SubMenuAssign{
-   id Int @id @default(autoincrement())
-   menuId Int
-   status Int
-   roleId Int
-}
-
-model SuperSubMenu{
   id Int @id @default(autoincrement())
-  name String
-  url String
+  subMenuId Int
+  menuId Int
   status Int
-  subMenuId  Int
+  roleId Int
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now())
+  
 }
-
-model SuperSubMenuAssign{
-   id Int @id @default(autoincrement())
-   subMenuId Int
-   status Int
-   roleId Int
-}
-
 
 model Role {
   id Int @id @default(autoincrement())
-  name Int
+  name String
   status Int
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now())
+  
 }
 
 model RoleAssign{
   id Int @id @default(autoincrement())
   roleId Int
   userId Int
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now())
+ 
 
 }
 
