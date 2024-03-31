@@ -39,10 +39,9 @@ model User {
   userIp String
   admin Admin? @relation(fields: [adminId], references: [id])
   adminId Int?
-  role Int
+  roleId Int
   createdAt DateTime @default(now())
   updatedAt DateTime @default(now())
-
 }
 
 model Campaign {
@@ -81,7 +80,6 @@ model Menu{
   icon String
   status Int
   sequence Int
-  subMenus SubMenu[]
   createdAt DateTime @default(now())
   updatedAt DateTime @default(now())
  
@@ -93,22 +91,19 @@ model SubMenu {
   status Int
   url String?
   menuId Int?
-  menu Menu? @relation(fields: [menuId], references: [id])
   createdAt DateTime @default(now())
   updatedAt DateTime @default(now())
-  
   
 }
 
 model SubMenuAssign{
   id Int @id @default(autoincrement())
-  subMenuId Int
   menuId Int
   status Int
+  subMenuId Int
   roleId Int
   createdAt DateTime @default(now())
   updatedAt DateTime @default(now())
-  
 }
 
 model Role {
@@ -117,7 +112,6 @@ model Role {
   status Int
   createdAt DateTime @default(now())
   updatedAt DateTime @default(now())
-  
 }
 
 model RoleAssign{
@@ -126,7 +120,5 @@ model RoleAssign{
   userId Int
   createdAt DateTime @default(now())
   updatedAt DateTime @default(now())
- 
-
 }
 

@@ -2,7 +2,7 @@ const express = require("express");
 const userAuthRouter = express.Router({ mergeParams: true });
 const userController = require("../controllers/userController");
 
-userAuthRouter.post("/:adminId/user/login", userController.userLoginPost);
+userAuthRouter.post("/user/login", userController.userLoginPost);
 userAuthRouter.post("/:adminId/user/register", userController.userRegisterPost);
 userAuthRouter.patch(
   "/:adminId/user/:userId/edit",
