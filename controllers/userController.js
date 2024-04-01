@@ -5,7 +5,7 @@ const prisma = new PrismaClient();
 class UserController {
   async userRegisterPost(req, res, next) {
     try {
-      const { userId, name, role, crmEmail, crmPassword, agentMobile } =
+      const { userId, name, roleId, crmEmail, crmPassword, agentMobile } =
         req.body;
 
       // user ip
@@ -47,13 +47,18 @@ class UserController {
           data: {
             id: userIdInt,
             username: name,
-            role,
+            roleId,
             crmEmail,
             crmPassword,
             agentMobile,
             userIp,
             adminId,
           },
+        });
+
+        //asigning role to the new user based on user id
+        await prisma.roleAssign.create({
+          data: { roleId: newUser.roleId, userId: newUser.id },
         });
 
         res.status(201).json({
@@ -72,23 +77,23 @@ class UserController {
       const userIp = req.socket.remoteAddress;
 
       // finding user from email
-      const userFound = await prisma.admin.findFirst({
+      const userFound = await prisma.user.findFirst({
         where: {
-          userId,
+          id: parseInt(userId),
         },
         select: {
           id: true,
           crmEmail: true,
-          crmPassowrd: true,
+          crmPassword: true,
         },
       });
 
       if (!userFound) {
         res.status(400).json({
-          message: "no user found with this email",
+          message: "no user found with this id",
           status: "failure",
         });
-      } else if (crmPassword === userFound.crmPassowrd) {
+      } else if (crmPassword === userFound.crmPassword) {
         // generates a number between 1000 and 10000 to be used as token
         const loginToken = Math.floor(
           Math.random() * (10000 - 1000 + 1) + 1000
@@ -98,7 +103,6 @@ class UserController {
         const updatedUser = await prisma.user.update({
           where: {
             id: userFound.id,
-            email,
           },
           data: {
             isActive: 1,
@@ -107,16 +111,58 @@ class UserController {
           },
         });
 
-        // changed this because removed password and now working with crmPassword
-        // const { password, ...userDataWithoutPassword } = updatedUser;
+        const role = await prisma.role.findFirst({
+          where: {
+            id: updatedUser.roleId,
+          },
+        });
 
-        // cookie expiration date - 15 days
+        const subMenusAssign = await prisma.subMenuAssign.findMany({
+          where: {
+            roleId: role.id,
+          },
+        });
+
+        const submenuIds = subMenusAssign.map((item) => item.subMenuId);
+
+        const subMenu = await prisma.subMenu.findMany({
+          where: {
+            id: {
+              in: submenuIds,
+            },
+          },
+        });
+
+        const uniqueSubMenuid = new Set(subMenu.map((item) => item.menuId));
+
+        const menus = await prisma.menu.findMany({
+          where: {
+            id: {
+              in: [...uniqueSubMenuid],
+            },
+          },
+        });
+
+        const menusWithSubMenuProperty = menus.map((menu) => {
+          return { ...menu, subMenus: [] };
+        });
+
+        menusWithSubMenuProperty.forEach((menu) => {
+          // Filter submenus that have matching menuId
+          const matchingSubMenus = subMenu.filter(
+            (sub) => sub.menuId === menu.id
+          );
+          // Push matching submenus into the subMenus array of the menu
+          menu.subMenus.push(...matchingSubMenus);
+        });
+
+        // cookie expiration duration - 15 days
         const expirationDate = new Date(Date.now() + 15 * 24 * 60 * 60 * 1000);
         res.cookie("token", loginToken, { expires: expirationDate });
 
         res.status(200).json({
           message: "user logged in!",
-          data: updatedUser,
+          data: { ...updatedUser, menus: menusWithSubMenuProperty },
           status: "success",
         });
       } else {
