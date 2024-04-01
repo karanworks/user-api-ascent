@@ -47,7 +47,7 @@ app.use(cookieParser());
 app.use("/", homeRouter);
 app.use("/", adminAuthRouter);
 app.use("/", userAuthRouter);
-app.use("/users", adminUsersRouter);
+app.use("/", adminUsersRouter);
 app.use("/", campaignRouter);
 app.use("/campaigns", adminCampaignsRouter);
 app.use("/", CRMFieldsRouter);

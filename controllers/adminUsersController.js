@@ -6,8 +6,10 @@ class AdminUsers {
     try {
       const token = req.cookies.token;
 
+      console.log("token", token);
+
       if (token) {
-        const loggedInUser = await prisma.admin.findFirst({
+        const loggedInUser = await prisma.user.findFirst({
           where: {
             token: parseInt(token),
           },
@@ -15,7 +17,20 @@ class AdminUsers {
             id: true,
             email: true,
             password: true,
-            users: true,
+          },
+        });
+
+        console.log("logged in user ->", loggedInUser);
+
+        const users = await prisma.user.findMany({
+          where: {
+            adminId: loggedInUser.id,
+          },
+          select: {
+            id: true,
+            username: true,
+            email: true,
+            agentMobile: true,
           },
         });
 
@@ -23,14 +38,14 @@ class AdminUsers {
 
         res.status(200).json({
           message: "users fetched!",
-          data: { ...adminDataWithoutPassword },
+          data: { ...adminDataWithoutPassword, users },
           status: "success",
         });
       } else {
-        res.status(401).json({ message: "admin not already logged in." });
+        res.status(401).json({ message: "user not already logged in." });
       }
     } catch (error) {
-      console.log("error while loggin in admin, get method ", error);
+      console.log("error while getting users", error);
     }
   }
 }

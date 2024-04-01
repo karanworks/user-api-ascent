@@ -13,33 +13,19 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model Admin {
-  id       Int      @id @default(autoincrement())
+model User {
+  id       Int     @id @default(autoincrement())
   username String
-  email    String
+  email    String @unique
   password String
-  campaigns Campaign[]
-  users    User[]
+  agentMobile String? @unique
   token    Int      @default(0)
+  campaigns Campaign[]
+  users   Json?
+  roleId Int
+  adminId Int?
   isActive Int      @default(0)
   userIp   String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @default(now())
-}
-
-
-model User {
-  id Int @id 
-  username String
-  crmEmail String @unique
-  crmPassword String
-  agentMobile String @unique
-  token Int @default(0)
-  isActive Int @default(0)
-  userIp String
-  admin Admin? @relation(fields: [adminId], references: [id])
-  adminId Int?
-  roleId Int
   createdAt DateTime @default(now())
   updatedAt DateTime @default(now())
 }
@@ -53,8 +39,8 @@ model Campaign {
   dnc Int @default(0)
   amd Int @default(0)
   crmFields CRMField[]
+  admin User? @relation(fields: [adminId], references: [id])
   adminId Int?
-  admin Admin? @relation(fields: [adminId], references: [id])
   createdAt DateTime @default(now())
   updatedAt DateTime @default(now())
 
@@ -76,8 +62,10 @@ model CRMField{
 
 model Menu{
   id Int @id @default(autoincrement())
-  name String
+  menuLableId String
+  label String
   icon String
+  link String
   status Int
   sequence Int
   createdAt DateTime @default(now())
@@ -87,10 +75,11 @@ model Menu{
 
 model SubMenu {
   id Int @id @default(autoincrement())
-  name String
+  submenuLableId String
+  label String
+  parentId String
+  link String
   status Int
-  url String?
-  menuId Int?
   createdAt DateTime @default(now())
   updatedAt DateTime @default(now())
   
