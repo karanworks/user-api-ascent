@@ -3,85 +3,59 @@ const { PrismaClient } = require("@prisma/client");
 const prisma = new PrismaClient();
 
 class AdminController {
-  async superadminRegisterPost(req, res) {
-    try {
-      const { username, email, password } = req.body;
-      const userIp = req.socket.remoteAddress;
-
-      await prisma.user.create({
-        data: { username, email, password, userIp, roleId: 1 },
-      });
-      res.status(201).json({
-        message: "user registered successfully!",
-        status: "success",
-      });
-    } catch (error) {
-      console.log("error while registration superadmin ->", error);
-    }
-  }
   async userRegisterPost(req, res) {
     try {
-      const { id, username, email, password, roleId } = req.body;
+      const { name, email, password, roleId } = req.body;
       const userIp = req.socket.remoteAddress;
       const { adminId } = req.params;
 
-      if (id) {
-        await prisma.user.create({
+      if (adminId) {
+        const newUser = await prisma.user.create({
           data: {
-            username,
+            username: name,
             email,
             password,
             userIp,
-            roleId,
+            roleId: parseInt(roleId),
             adminId: parseInt(adminId),
           },
         });
         res.status(201).json({
           message: "user registered successfully!",
+          data: newUser,
           status: "success",
         });
       } else {
-        res.status(404).json({
-          message: "user id is required!",
-          status: "failure",
+        console.log("this code is being called here");
+        const newUser = await prisma.user.create({
+          data: { username, email, password, userIp, roleId: 1 },
+        });
+        res.status(201).json({
+          message: "user registered successfully!",
+          data: newUser,
+          status: "success",
         });
       }
     } catch (error) {
-      console.log("error while registration user ->", error);
+      console.log("error while registration superadmin ->", error);
     }
   }
 
-  async adminLoginPost(req, res) {
+  async userLoginPost(req, res) {
     try {
-      const { userId, email, password } = req.body;
+      const { email, password } = req.body;
       const userIp = req.socket.remoteAddress;
 
-      let userFound;
-
-      if (userId) {
-        // Finding user by ID
-        userFound = await prisma.user.findUnique({
-          where: {
-            id: parseInt(userId),
-          },
-          select: {
-            id: true,
-            email: true,
-            password: true,
-          },
-        });
-      } else if (email) {
-        userFound = await prisma.user.findFirst({
-          where: {
-            email,
-          },
-          select: {
-            id: true,
-            email: true,
-            password: true,
-          },
-        });
-      }
+      let userFound = await prisma.user.findFirst({
+        where: {
+          email,
+        },
+        select: {
+          id: true,
+          email: true,
+          password: true,
+        },
+      });
 
       if (!userFound) {
         res.status(400).json({
@@ -156,7 +130,7 @@ class AdminController {
       console.log("error while loggin in user ", error);
     }
   }
-  async adminLoginGet(req, res) {
+  async userLoginGet(req, res) {
     try {
       const token = req.cookies.token;
 

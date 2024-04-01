@@ -6,8 +6,6 @@ class AdminUsers {
     try {
       const token = req.cookies.token;
 
-      console.log("token", token);
-
       if (token) {
         const loggedInUser = await prisma.user.findFirst({
           where: {
@@ -19,8 +17,6 @@ class AdminUsers {
             password: true,
           },
         });
-
-        console.log("logged in user ->", loggedInUser);
 
         const users = await prisma.user.findMany({
           where: {
