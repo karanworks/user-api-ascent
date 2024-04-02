@@ -4,7 +4,7 @@ class CRMConfiguration {
       const token = req.cookies.token;
 
       if (token) {
-        const userWithCrmFields = await prisma.admin.findFirst({
+        const userWithCrmFields = await prisma.user.findFirst({
           where: {
             token: parseInt(token),
           },

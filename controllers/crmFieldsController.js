@@ -8,7 +8,7 @@ class CRMFieldsController {
       const { caption, type, required, readOnly, position } = req.body;
       const { campaignId, adminId } = req.params;
 
-      const admin = await prisma.admin.findFirst({
+      const admin = await prisma.user.findFirst({
         where: {
           id: parseInt(adminId),
         },
@@ -131,7 +131,7 @@ class CRMFieldsController {
       const { campaignId } = crmFieldFound;
 
       // Get the admin and campaign information
-      const admin = await prisma.admin.findFirst({
+      const admin = await prisma.user.findFirst({
         where: {
           id: parseInt(adminId),
         },

@@ -1,11 +1,12 @@
 const { PrismaClient } = require("@prisma/client");
+const { parse } = require("path");
 
 const prisma = new PrismaClient();
 
 class AdminController {
   async userRegisterPost(req, res) {
     try {
-      const { name, email, password, roleId } = req.body;
+      const { name, email, password, roleId, agentMobile } = req.body;
       const userIp = req.socket.remoteAddress;
       const { adminId } = req.params;
 
@@ -18,6 +19,7 @@ class AdminController {
             userIp,
             roleId: parseInt(roleId),
             adminId: parseInt(adminId),
+            agentMobile,
           },
         });
         res.status(201).json({
@@ -26,9 +28,8 @@ class AdminController {
           status: "success",
         });
       } else {
-        console.log("this code is being called here");
         const newUser = await prisma.user.create({
-          data: { username, email, password, userIp, roleId: 1 },
+          data: { username, email, password, userIp, roleId: 1, agentMobile },
         });
         res.status(201).json({
           message: "user registered successfully!",
@@ -103,10 +104,59 @@ class AdminController {
           select: {
             id: true,
             username: true,
+            password: true,
             email: true,
             agentMobile: true,
+            roleId: true,
           },
         });
+
+        const role = await prisma.role.findFirst({
+          where: {
+            id: updatedAdmin.roleId,
+          },
+        });
+
+        const subMenusAssign = await prisma.subMenuAssign.findMany({
+          where: {
+            roleId: role.id,
+          },
+        });
+
+        const submenuIds = subMenusAssign.map((item) => item.subMenuId);
+
+        const subMenu = await prisma.subMenu.findMany({
+          where: {
+            id: {
+              in: submenuIds,
+            },
+          },
+        });
+
+        const uniqueSubMenuid = new Set(subMenu.map((item) => item.menuId));
+
+        const menus = await prisma.menu.findMany({
+          where: {
+            id: {
+              in: [...uniqueSubMenuid],
+            },
+          },
+        });
+
+        const menusWithSubMenuProperty = menus.map((menu) => {
+          return { ...menu, subItems: [] };
+        });
+
+        menusWithSubMenuProperty.forEach((menu) => {
+          // Filter submenus that have matching menuId
+          const matchingSubMenus = subMenu.filter(
+            (sub) => sub.menuId === menu.id
+          );
+          // Push matching submenus into the subMenus array of the menu
+          menu.subItems.push(...matchingSubMenus);
+        });
+
+        console.log("submenu assign here ->", menus);
 
         const { password, ...adminDataWithoutPassword } = updatedAdmin;
 
@@ -120,7 +170,11 @@ class AdminController {
 
         res.status(200).json({
           message: "user logged in!",
-          data: { ...adminDataWithoutPassword, users: allUsers },
+          data: {
+            ...adminDataWithoutPassword,
+            users: allUsers,
+            menus: menusWithSubMenuProperty,
+          },
           status: "success",
         });
       } else {
@@ -130,6 +184,46 @@ class AdminController {
       console.log("error while loggin in user ", error);
     }
   }
+
+  async userUpdatePatch(req, res) {
+    try {
+      const { name, email, password, agentMobile, roleId } = req.body;
+
+      console.log(
+        "body while updating user inside admin controller ->",
+        req.body
+      );
+
+      // finding user from id
+      const userFound = await prisma.user.findFirst({
+        where: {
+          email,
+        },
+      });
+
+      if (userFound) {
+        const updatedData = await prisma.user.update({
+          where: {
+            email,
+          },
+          data: {
+            username: name,
+            email,
+            password,
+            agentMobile,
+            roleId: parseInt(roleId),
+          },
+        });
+
+        res.json({ message: "user updated successfully!", data: updatedData });
+      } else {
+        res.json({ message: "user not found!" });
+      }
+    } catch (error) {
+      console.log("error while updating user in admin controller", error);
+    }
+  }
+
   async userLoginGet(req, res) {
     try {
       const token = req.cookies.token;
@@ -165,8 +259,10 @@ class AdminController {
           select: {
             id: true,
             username: true,
+            password: true,
             email: true,
             agentMobile: true,
+            roleId: true,
           },
         });
 

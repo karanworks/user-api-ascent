@@ -9,6 +9,10 @@ adminAuthRouter.post(
   "/:adminId/user/register",
   adminController.userRegisterPost
 );
+adminAuthRouter.patch(
+  "/:adminId/user/:userId/edit",
+  adminController.userUpdatePatch
+);
 adminAuthRouter.get("/logout", adminController.adminLogoutGet);
 
 module.exports = adminAuthRouter;

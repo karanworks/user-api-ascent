@@ -7,7 +7,7 @@ class AdminCampaignsController {
       const token = req.cookies.token;
 
       if (token) {
-        const loggedInUser = await prisma.admin.findFirst({
+        const loggedInUser = await prisma.user.findFirst({
           where: {
             token: parseInt(token),
           },

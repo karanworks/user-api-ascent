@@ -25,8 +25,10 @@ class AdminUsers {
           select: {
             id: true,
             username: true,
+            password: true,
             email: true,
             agentMobile: true,
+            roleId: true,
           },
         });
 

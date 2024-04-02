@@ -175,28 +175,31 @@ class UserController {
 
   async userUpdatePatch(req, res) {
     try {
-      const { userId, name, crmEmail, crmPassword, agentMobile } = req.body;
+      const { name, email, password, agentMobile, roleId } = req.body;
 
-      const { userId: editUserId } = req.params;
+      const { adminId } = req.params;
+
+      console.log("edit user api being called");
 
       // finding user from id
       const userFound = await prisma.user.findFirst({
         where: {
-          id: parseInt(editUserId),
+          id: parseInt(adminId),
         },
       });
 
       if (userFound) {
         const updatedData = await prisma.user.update({
           where: {
-            id: parseInt(editUserId),
+            id: parseInt(adminId),
           },
           data: {
-            id: parseInt(userId),
+            id: parseInt(adminId),
             username: name,
-            crmEmail,
-            crmPassword,
+            email,
+            password,
             agentMobile,
+            roleId,
           },
         });
 
