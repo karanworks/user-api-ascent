@@ -36,8 +36,6 @@ class RoleController {
       const { name } = req.body;
       const { adminId, roleId } = req.params;
 
-      console.log("api to update role called");
-
       const adminFound = await prisma.user.findFirst({
         where: {
           id: parseInt(adminId),

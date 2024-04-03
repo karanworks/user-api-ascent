@@ -11,6 +11,7 @@ const adminCampaignsRouter = require("./routes/adminCampaigns");
 const campaignRouter = require("./routes/campaign");
 const CRMFieldsRouter = require("./routes/crmFields");
 const adminCrmFieldsRouter = require("./routes/adminCrmFields");
+const routePermissionsRouter = require("./routes/routePermissions");
 
 // cookie parser
 const cookieParser = require("cookie-parser");
@@ -53,6 +54,7 @@ app.use("/campaigns", adminCampaignsRouter);
 app.use("/", CRMFieldsRouter);
 app.use("/", adminCrmFieldsRouter);
 app.use("/", roleRouter);
+app.use("/", routePermissionsRouter);
 
 app.listen(process.env.PORT || 3001, () => {
   console.log(`Server listening at port no -> ${process.env.PORT}`);
