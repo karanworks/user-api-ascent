@@ -156,8 +156,6 @@ class AdminController {
           menu.subItems.push(...matchingSubMenus);
         });
 
-        console.log("submenu assign here ->", menus);
-
         const { password, ...adminDataWithoutPassword } = updatedAdmin;
 
         // cookie expiration date - 15 days
