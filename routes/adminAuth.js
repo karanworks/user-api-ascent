@@ -6,12 +6,16 @@ adminAuthRouter.post("/login", adminController.userLoginPost);
 adminAuthRouter.get("/login", adminController.userLoginGet);
 adminAuthRouter.post("/register", adminController.userRegisterPost);
 adminAuthRouter.post(
-  "/:adminId/user/register",
+  "/:userId/user/register",
   adminController.userRegisterPost
 );
 adminAuthRouter.patch(
   "/:adminId/user/:userId/edit",
   adminController.userUpdatePatch
+);
+adminAuthRouter.delete(
+  "/:adminId/user/:userId/delete",
+  adminController.userRemoveDelete
 );
 adminAuthRouter.get("/logout", adminController.adminLogoutGet);
 

@@ -51,15 +51,12 @@ class RoutePermissions {
     try {
       const { roleId } = req.params;
 
-      console.log("allowed permissions api called");
-
       const role = await prisma.role.findFirst({
         where: {
           id: parseInt(roleId),
         },
       });
 
-      console.log("current role ->", role);
       const subMenusAssign = await prisma.subMenuAssign.findMany({
         where: {
           roleId: role.id,

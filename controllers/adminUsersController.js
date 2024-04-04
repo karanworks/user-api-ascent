@@ -36,7 +36,10 @@ class AdminUsers {
 
         res.status(200).json({
           message: "users fetched!",
-          data: { ...adminDataWithoutPassword, users },
+          data: {
+            ...adminDataWithoutPassword,
+            users,
+          },
           status: "success",
         });
       } else {

@@ -8,25 +8,47 @@ class AdminController {
     try {
       const { name, email, password, roleId, agentMobile } = req.body;
       const userIp = req.socket.remoteAddress;
-      const { adminId } = req.params;
+      const { userId } = req.params;
 
-      if (adminId) {
-        const newUser = await prisma.user.create({
-          data: {
-            username: name,
-            email,
-            password,
-            userIp,
-            roleId: parseInt(roleId),
-            adminId: parseInt(adminId),
-            agentMobile,
-          },
-        });
-        res.status(201).json({
-          message: "user registered successfully!",
-          data: newUser,
-          status: "success",
-        });
+      const alreadyRegistered = await prisma.user.findFirst({
+        where: {
+          OR: [{ email }, { agentMobile }],
+        },
+      });
+
+      if (userId) {
+        if (alreadyRegistered) {
+          if (alreadyRegistered.email === email) {
+            res.json({
+              message: "User already registered with this CRM Email.",
+              data: alreadyRegistered,
+              status: "failure",
+            });
+          } else if (alreadyRegistered.agentMobile === agentMobile) {
+            res.json({
+              message: "User already registered with this Mobile no.",
+              data: alreadyRegistered,
+              status: "failure",
+            });
+          }
+        } else {
+          const newUser = await prisma.user.create({
+            data: {
+              username: name,
+              email,
+              password,
+              userIp,
+              roleId: parseInt(roleId),
+              adminId: parseInt(userId),
+              agentMobile,
+            },
+          });
+          res.status(201).json({
+            message: "user registered successfully!",
+            data: newUser,
+            status: "success",
+          });
+        }
       } else {
         const newUser = await prisma.user.create({
           data: { username, email, password, userIp, roleId: 1, agentMobile },
@@ -200,7 +222,7 @@ class AdminController {
       });
 
       if (userFound) {
-        const updatedData = await prisma.user.update({
+        const updatedUser = await prisma.user.update({
           where: {
             email,
           },
@@ -213,12 +235,45 @@ class AdminController {
           },
         });
 
-        res.json({ message: "user updated successfully!", data: updatedData });
+        res.json({
+          message: "user updated successfully!",
+          data: { updatedUser },
+        });
       } else {
         res.json({ message: "user not found!" });
       }
     } catch (error) {
       console.log("error while updating user in admin controller", error);
+    }
+  }
+
+  async userRemoveDelete(req, res) {
+    try {
+      const { userId } = req.params;
+
+      // finding user from userId
+      const userFound = await prisma.user.findFirst({
+        where: {
+          id: parseInt(userId),
+        },
+      });
+
+      if (userFound) {
+        const deletedUser = await prisma.user.delete({
+          where: {
+            id: parseInt(userId),
+          },
+        });
+
+        res.status(201).json({
+          message: "user deleted successfully!",
+          data: { deletedUser },
+        });
+      } else {
+        res.status(404).json({ message: "user does not exist!" });
+      }
+    } catch (error) {
+      console.log("error while deleting user ", error);
     }
   }
 
@@ -264,11 +319,62 @@ class AdminController {
           },
         });
 
+        const role = await prisma.role.findFirst({
+          where: {
+            id: updatedAdmin.roleId,
+          },
+        });
+
+        const subMenusAssign = await prisma.subMenuAssign.findMany({
+          where: {
+            roleId: role.id,
+          },
+        });
+
+        const submenuIds = subMenusAssign.map((item) => item.subMenuId);
+
+        const subMenu = await prisma.subMenu.findMany({
+          where: {
+            id: {
+              in: submenuIds,
+            },
+          },
+        });
+
+        const uniqueSubMenuid = new Set(subMenu.map((item) => item.menuId));
+
+        const menus = await prisma.menu.findMany({
+          where: {
+            id: {
+              in: [...uniqueSubMenuid],
+            },
+          },
+        });
+
+        const menusWithSubMenuProperty = menus.map((menu) => {
+          return { ...menu, subItems: [] };
+        });
+
+        menusWithSubMenuProperty.forEach((menu) => {
+          // Filter submenus that have matching menuId
+          const matchingSubMenus = subMenu.filter(
+            (sub) => sub.menuId === menu.id
+          );
+          // Push matching submenus into the subMenus array of the menu
+          menu.subItems.push(...matchingSubMenus);
+        });
+
         const { password, ...adminDataWithoutPassword } = loggedInUser;
+
+        console.log("menus in login get ->", menusWithSubMenuProperty);
 
         res.status(200).json({
           message: "user logged in with token!",
-          data: { ...adminDataWithoutPassword, users },
+          data: {
+            ...adminDataWithoutPassword,
+            users,
+            menus: menusWithSubMenuProperty,
+          },
           status: "success",
         });
       } else {

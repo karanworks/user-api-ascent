@@ -8,9 +8,9 @@ userAuthRouter.post("/user/login", userController.userLoginPost);
 //   "/:adminId/user/:userId/edit",
 //   userController.userUpdatePatch
 // );
-userAuthRouter.delete(
-  "/:adminId/user/:userId/delete",
-  userController.userRemoveDelete
-);
+// userAuthRouter.delete(
+//   "/:adminId/user/:userId/delete",
+//   userController.userRemoveDelete
+// );
 
 module.exports = userAuthRouter;
