@@ -16,7 +16,6 @@ class CampaignController {
           campaignName,
         },
       });
-      console.log("already exists", alreadyExists);
 
       if (alreadyExists) {
         res.json({
@@ -48,7 +47,7 @@ class CampaignController {
   async campaignUpdatePatch(req, res) {
     try {
       const { campaignName, campaignDescription, campaignType } = req.body;
-      const { campaignId } = req.params;
+      const { campaignId, adminId } = req.params;
 
       // finding campaign from id
       const campaignFound = await prisma.campaign.findFirst({
@@ -57,23 +56,38 @@ class CampaignController {
         },
       });
 
-      if (campaignFound) {
-        const updatedCampaign = await prisma.campaign.update({
-          where: {
-            id: parseInt(campaignId),
-          },
-          data: {
-            campaignName,
-            campaignDescription,
-            campaignType,
-          },
-        });
+      const alreadyExists = await prisma.campaign.findFirst({
+        where: {
+          adminId: parseInt(adminId),
+          campaignName,
+        },
+      });
 
-        res.json({
-          message: "campaign updated successfully!",
-          data: { updatedCampaign },
-          status: "success",
-        });
+      if (campaignFound) {
+        if (alreadyExists) {
+          res.json({
+            message: "Campaign with same name already exists!",
+            data: alreadyExists,
+            status: "failure",
+          });
+        } else {
+          const updatedCampaign = await prisma.campaign.update({
+            where: {
+              id: parseInt(campaignId),
+            },
+            data: {
+              campaignName,
+              campaignDescription,
+              campaignType,
+            },
+          });
+
+          res.json({
+            message: "campaign updated successfully!",
+            data: { updatedCampaign },
+            status: "success",
+          });
+        }
       } else {
         res.json({ message: "campaign not found!", status: "failure" });
       }
