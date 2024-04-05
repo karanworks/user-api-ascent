@@ -209,11 +209,6 @@ class AdminController {
     try {
       const { name, email, password, agentMobile, roleId } = req.body;
 
-      console.log(
-        "body while updating user inside admin controller ->",
-        req.body
-      );
-
       // finding user from id
       const userFound = await prisma.user.findFirst({
         where: {
@@ -221,7 +216,30 @@ class AdminController {
         },
       });
 
+      const alreadyRegistered = await prisma.user.findFirst({
+        where: {
+          OR: [{ email }, { agentMobile }],
+        },
+      });
+
+      console.log("already registered user ->", alreadyRegistered);
+
       if (userFound) {
+        // if (alreadyRegistered) {
+        //   if (alreadyRegistered.email === email) {
+        //     res.json({
+        //       message: "User already registered with this CRM Email.",
+        //       data: alreadyRegistered,
+        //       status: "failure",
+        //     });
+        //   } else if (alreadyRegistered.agentMobile === agentMobile) {
+        //     res.json({
+        //       message: "User already registered with this Mobile no.",
+        //       data: alreadyRegistered,
+        //       status: "failure",
+        //     });
+        //   }
+        // } else {
         const updatedUser = await prisma.user.update({
           where: {
             email,
@@ -239,6 +257,7 @@ class AdminController {
           message: "user updated successfully!",
           data: { updatedUser },
         });
+        // }
       } else {
         res.json({ message: "user not found!" });
       }
@@ -321,7 +340,7 @@ class AdminController {
 
         const role = await prisma.role.findFirst({
           where: {
-            id: updatedAdmin.roleId,
+            id: loggedInUser.roleId,
           },
         });
 
@@ -365,8 +384,6 @@ class AdminController {
         });
 
         const { password, ...adminDataWithoutPassword } = loggedInUser;
-
-        console.log("menus in login get ->", menusWithSubMenuProperty);
 
         res.status(200).json({
           message: "user logged in with token!",

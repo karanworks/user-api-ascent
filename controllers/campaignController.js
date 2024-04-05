@@ -10,20 +10,36 @@ class CampaignController {
       // admin that is creating the user
       const adminId = parseInt(req.params.adminId);
 
-      const newCampaign = await prisma.campaign.create({
-        data: {
+      const alreadyExists = await prisma.campaign.findFirst({
+        where: {
+          adminId: parseInt(adminId),
           campaignName,
-          campaignDescription,
-          campaignType,
-          adminId,
         },
       });
+      console.log("already exists", alreadyExists);
 
-      res.status(201).json({
-        message: "new campaign created!",
-        data: newCampaign,
-        status: "success",
-      });
+      if (alreadyExists) {
+        res.json({
+          message: "Campaign with same name already exists!",
+          data: alreadyExists,
+          status: "failure",
+        });
+      } else {
+        const newCampaign = await prisma.campaign.create({
+          data: {
+            campaignName,
+            campaignDescription,
+            campaignType,
+            adminId,
+          },
+        });
+
+        res.json({
+          message: "new campaign created!",
+          data: newCampaign,
+          status: "success",
+        });
+      }
     } catch (error) {
       console.log("error while creating campaign ->", error);
     }
@@ -42,7 +58,7 @@ class CampaignController {
       });
 
       if (campaignFound) {
-        const updatedData = await prisma.campaign.update({
+        const updatedCampaign = await prisma.campaign.update({
           where: {
             id: parseInt(campaignId),
           },
@@ -55,7 +71,7 @@ class CampaignController {
 
         res.json({
           message: "campaign updated successfully!",
-          data: updatedData,
+          data: { updatedCampaign },
           status: "success",
         });
       } else {

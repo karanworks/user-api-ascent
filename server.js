@@ -50,7 +50,7 @@ app.use("/", adminAuthRouter);
 app.use("/", userAuthRouter);
 app.use("/", adminUsersRouter);
 app.use("/", campaignRouter);
-app.use("/campaigns", adminCampaignsRouter);
+app.use("/", adminCampaignsRouter);
 app.use("/", CRMFieldsRouter);
 app.use("/", adminCrmFieldsRouter);
 app.use("/", roleRouter);
