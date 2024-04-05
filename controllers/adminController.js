@@ -209,55 +209,66 @@ class AdminController {
     try {
       const { name, email, password, agentMobile, roleId } = req.body;
 
+      const { userId } = req.params;
+
       // finding user from id
       const userFound = await prisma.user.findFirst({
         where: {
-          email,
+          id: parseInt(userId),
         },
       });
 
-      const alreadyRegistered = await prisma.user.findFirst({
-        where: {
-          OR: [{ email }, { agentMobile }],
-        },
-      });
+      let alreadyRegistered;
 
-      console.log("already registered user ->", alreadyRegistered);
+      if (userFound.email === email && userFound.agentMobile !== agentMobile) {
+        alreadyRegistered = await prisma.user.findFirst({
+          where: {
+            agentMobile,
+          },
+        });
+      }
 
-      if (userFound) {
-        // if (alreadyRegistered) {
-        //   if (alreadyRegistered.email === email) {
-        //     res.json({
-        //       message: "User already registered with this CRM Email.",
-        //       data: alreadyRegistered,
-        //       status: "failure",
-        //     });
-        //   } else if (alreadyRegistered.agentMobile === agentMobile) {
-        //     res.json({
-        //       message: "User already registered with this Mobile no.",
-        //       data: alreadyRegistered,
-        //       status: "failure",
-        //     });
-        //   }
-        // } else {
-        const updatedUser = await prisma.user.update({
+      if (userFound.email !== email && userFound.agentMobile === agentMobile) {
+        alreadyRegistered = await prisma.user.findFirst({
           where: {
             email,
           },
-          data: {
-            username: name,
-            email,
-            password,
-            agentMobile,
-            roleId: parseInt(roleId),
-          },
         });
+      }
 
-        res.json({
-          message: "user updated successfully!",
-          data: { updatedUser },
-        });
-        // }
+      if (userFound) {
+        if (alreadyRegistered) {
+          if (alreadyRegistered.email === email) {
+            res.json({
+              message: "User already registered with this CRM Email.",
+              data: alreadyRegistered,
+              status: "failure",
+            });
+          } else if (alreadyRegistered.agentMobile === agentMobile) {
+            res.json({
+              message: "User already registered with this Mobile no.",
+              data: alreadyRegistered,
+              status: "failure",
+            });
+          }
+        } else {
+          const updatedUser = await prisma.user.update({
+            where: {
+              email,
+            },
+            data: {
+              username: name,
+              email,
+              password,
+              agentMobile,
+              roleId: parseInt(roleId),
+            },
+          });
+          res.json({
+            message: "user updated successfully!",
+            data: { updatedUser },
+          });
+        }
       } else {
         res.json({ message: "user not found!" });
       }
