@@ -6,11 +6,20 @@ class CRMFieldsController {
   async crmFieldsCreatePost(req, res) {
     try {
       const { caption, type, required, readOnly, position } = req.body;
-      const { campaignId, adminId } = req.params;
+      const { campaignId } = req.params;
+
+      const token = req.cookies.token;
+
+      // admin that is creating the crmfield
+      const adminUser = await prisma.user.findFirst({
+        where: {
+          token: parseInt(token),
+        },
+      });
 
       const admin = await prisma.user.findFirst({
         where: {
-          id: parseInt(adminId),
+          id: adminUser.id,
         },
         select: {
           id: true,
@@ -130,10 +139,18 @@ class CRMFieldsController {
 
       const { campaignId } = crmFieldFound;
 
+      const token = req.cookies.token;
+
+      const adminUser = await prisma.user.findFirst({
+        where: {
+          token: parseInt(token),
+        },
+      });
+
       // Get the admin and campaign information
       const admin = await prisma.user.findFirst({
         where: {
-          id: parseInt(adminId),
+          id: adminUser.id,
         },
         select: {
           id: true,
@@ -161,11 +178,6 @@ class CRMFieldsController {
           crmField.position === position && crmField.id !== parseInt(crmFieldId)
       );
 
-      console.log(
-        "already exist on same position ->",
-        alreadyExistOnSamePosition
-      );
-
       if (crmFieldFound.caption === caption) {
         captionUpdated = true;
       }
@@ -175,13 +187,10 @@ class CRMFieldsController {
           message:
             "Field with the same caption already exists in this campaign.",
           data: alreadyExistedField,
-          status: "duplicate",
+          status: "failure",
         });
       } else if (alreadyExistOnSamePosition) {
         if (crmFieldFound.position < position) {
-          console.log(
-            "if position to be changed is greater than current position."
-          );
           const nextField = await prisma.CRMField.findFirst({
             where: {
               position,
@@ -220,22 +229,11 @@ class CRMFieldsController {
             status: "positions-updated",
           });
         } else if (crmFieldFound.position > position) {
-          console.log(
-            "if position to be changed is smaller than current position."
-          );
-          console.log(
-            "field ki current position ->",
-            crmFieldFound.position,
-            "field ko jis position par karna hai ->",
-            position
-          );
           const prevField = await prisma.CRMField.findFirst({
             where: {
               position: position,
             },
           });
-
-          console.log("jo us field par already exist krti hai ->", prevField);
 
           const prevFieldUpdated = await prisma.CRMField.update({
             where: {
@@ -246,11 +244,6 @@ class CRMFieldsController {
             },
           });
 
-          console.log(
-            "jo us field par already exist krti hai uska updated versionn ->",
-            prevFieldUpdated
-          );
-
           const currentFieldUpdated = await prisma.CRMField.update({
             where: {
               id: crmFieldFound.id,
@@ -259,11 +252,6 @@ class CRMFieldsController {
               position: prevField.position,
             },
           });
-
-          console.log(
-            "current field ka updated versionn ->",
-            currentFieldUpdated
-          );
 
           // Retrieve all CRM fields for the campaign after position update
           const allCampaignFields = await prisma.campaign

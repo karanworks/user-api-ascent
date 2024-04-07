@@ -57,7 +57,7 @@ class CampaignController {
 
       const token = req.cookies.token;
 
-      // admin that is creating the user
+      // admin that is creating the campaign
       const adminUser = await prisma.user.findFirst({
         where: {
           token: parseInt(token),
