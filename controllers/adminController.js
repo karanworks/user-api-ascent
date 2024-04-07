@@ -1,5 +1,4 @@
 const { PrismaClient } = require("@prisma/client");
-const { parse } = require("path");
 
 const prisma = new PrismaClient();
 

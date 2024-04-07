@@ -2,10 +2,12 @@ const { PrismaClient } = require("@prisma/client");
 
 const prisma = new PrismaClient();
 
-class RoutePermissions {
+class MappingController {
   async changePermissionsPost(req, res) {
     try {
       const { menuId, subMenuId, roleId } = req.body;
+
+      console.log("change permission api called ->", menuId, subMenuId, roleId);
 
       const permissionAlreadyExists = await prisma.subMenuAssign.findFirst({
         where: {
@@ -107,4 +109,4 @@ class RoutePermissions {
   }
 }
 
-module.exports = new RoutePermissions();
+module.exports = new MappingController();

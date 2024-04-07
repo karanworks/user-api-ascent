@@ -3,16 +3,35 @@ const { PrismaClient } = require("@prisma/client");
 const prisma = new PrismaClient();
 
 class RoleController {
+  async roleGet(req, res) {
+    try {
+      const roles = await prisma.role.findMany({});
+      res.json({
+        message: "roles feteched successfully!",
+        data: roles,
+        status: "success",
+      });
+    } catch (error) {
+      console.log("error while getting roles ->", error);
+    }
+  }
+
   async roleCreatePost(req, res) {
     try {
       const { name, status } = req.body;
-      const { adminId } = req.params;
 
-      console.log("admin id ->", adminId);
+      const token = req.cookies.token;
+
+      // admin that is creating the campaign
+      const adminUser = await prisma.user.findFirst({
+        where: {
+          token: parseInt(token),
+        },
+      });
 
       const adminFound = await prisma.user.findFirst({
         where: {
-          id: parseInt(adminId),
+          id: adminUser.id,
         },
       });
 
@@ -34,11 +53,19 @@ class RoleController {
   async roleUpdatePatch(req, res) {
     try {
       const { name } = req.body;
-      const { adminId, roleId } = req.params;
+      const { roleId } = req.params;
+
+      const token = req.cookies.token;
+
+      const adminUser = await prisma.user.findFirst({
+        where: {
+          token: parseInt(token),
+        },
+      });
 
       const adminFound = await prisma.user.findFirst({
         where: {
-          id: parseInt(adminId),
+          id: adminUser.id,
         },
       });
 
@@ -75,11 +102,19 @@ class RoleController {
 
   async roleRemoveDelete(req, res) {
     try {
-      const { adminId, roleId } = req.params;
+      const { roleId } = req.params;
+
+      const token = req.cookies.token;
+
+      const adminUser = await prisma.user.findFirst({
+        where: {
+          token: parseInt(token),
+        },
+      });
 
       const adminFound = await prisma.user.findFirst({
         where: {
-          id: parseInt(adminId),
+          id: adminUser.id,
         },
       });
 
@@ -103,19 +138,6 @@ class RoleController {
       }
     } catch (error) {
       console.log("error while deleting role ->", error);
-    }
-  }
-
-  async roleGet(req, res) {
-    try {
-      const roles = await prisma.role.findMany({});
-      res.json({
-        message: "roles feteched successfully!",
-        data: roles,
-        status: "success",
-      });
-    } catch (error) {
-      console.log("error while getting roles ->", error);
     }
   }
 }
