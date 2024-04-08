@@ -1,16 +1,19 @@
 const express = require("express");
 const adminAuthRouter = express.Router({ mergeParams: true });
-const adminController = require("../controllers/adminController");
+const adminAuthController = require("../controllers/adminAuthController");
 
-adminAuthRouter.post("/login", adminController.userLoginPost);
-adminAuthRouter.get("/login", adminController.userLoginGet);
-adminAuthRouter.post("/register", adminController.userRegisterPost);
-adminAuthRouter.post("/user/register", adminController.userRegisterPost);
-adminAuthRouter.patch("/user/:userId/edit", adminController.userUpdatePatch);
+adminAuthRouter.post("/login", adminAuthController.userLoginPost);
+adminAuthRouter.get("/login", adminAuthController.userLoginGet);
+adminAuthRouter.post("/register", adminAuthController.userRegisterPost);
+adminAuthRouter.post("/user/register", adminAuthController.userRegisterPost);
+adminAuthRouter.patch(
+  "/user/:userId/edit",
+  adminAuthController.userUpdatePatch
+);
 adminAuthRouter.delete(
   "/user/:userId/delete",
-  adminController.userRemoveDelete
+  adminAuthController.userRemoveDelete
 );
-adminAuthRouter.get("/logout", adminController.adminLogoutGet);
+adminAuthRouter.get("/logout", adminAuthController.adminLogoutGet);
 
 module.exports = adminAuthRouter;

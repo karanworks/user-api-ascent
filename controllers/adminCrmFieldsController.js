@@ -1,10 +1,12 @@
 const { PrismaClient } = require("@prisma/client");
+const response = require("../utils/response");
+const getToken = require("../utils/getToken");
 const prisma = new PrismaClient();
 
 class AdminCrmFieldsController {
   async adminCrmFieldsGet(req, res) {
     try {
-      const token = req.cookies.token;
+      const token = await getToken(req, res);
 
       if (token) {
         const loggedInUser = await prisma.user.findFirst({
@@ -32,13 +34,11 @@ class AdminCrmFieldsController {
 
         const { password, ...adminDataWithoutPassword } = loggedInUser;
 
-        res.status(200).json({
-          message: "campaigns with crm fields fetched fetched!",
-          data: { ...adminDataWithoutPassword },
-          status: "success",
+        response.success(res, "campaigns with crm fields fetched fetched!", {
+          ...adminDataWithoutPassword,
         });
       } else {
-        res.status(401).json({ message: "admin not already logged in." });
+        response.error(res, "admin not already logged in.");
       }
     } catch (error) {
       console.log("error while getting crm configuration data", error);

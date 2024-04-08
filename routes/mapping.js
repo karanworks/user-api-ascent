@@ -1,9 +1,9 @@
 const express = require("express");
-const mapping = express.Router({ mergeParams: true });
+const mappingRouter = express.Router({ mergeParams: true });
 const mappingController = require("../controllers/mappingController");
 const getMenus = require("../utils/getMenus");
 
-mapping.get("/mapping", async (req, res) => {
+mappingRouter.get("/mapping", async (req, res) => {
   try {
     const menus = await getMenus(req, res);
 
@@ -17,8 +17,14 @@ mapping.get("/mapping", async (req, res) => {
   }
 });
 
-mapping.post("/role/:roleId/mapping", mappingController.changePermissionsPost);
+mappingRouter.post(
+  "/role/:roleId/mapping",
+  mappingController.changePermissionsPost
+);
 
-mapping.get("/role/:roleId/mapping", mappingController.allowedPermissionsGet);
+mappingRouter.get(
+  "/role/:roleId/mapping",
+  mappingController.allowedPermissionsGet
+);
 
-module.exports = mapping;
+module.exports = mappingRouter;

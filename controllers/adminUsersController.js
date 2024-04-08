@@ -1,10 +1,12 @@
 const { PrismaClient } = require("@prisma/client");
 const prisma = new PrismaClient();
+const response = require("../utils/response");
+const getToken = require("../utils/getToken");
 
 class AdminUsers {
   async adminUsersGet(req, res) {
     try {
-      const token = req.cookies.token;
+      const token = await getToken(req, res);
 
       if (token) {
         const loggedInUser = await prisma.user.findFirst({
@@ -34,16 +36,12 @@ class AdminUsers {
 
         const { password, ...adminDataWithoutPassword } = loggedInUser;
 
-        res.status(200).json({
-          message: "users fetched!",
-          data: {
-            ...adminDataWithoutPassword,
-            users,
-          },
-          status: "success",
+        response.success(res, "Users fetched", {
+          ...adminDataWithoutPassword,
+          users,
         });
       } else {
-        res.status(401).json({ message: "user not already logged in." });
+        response.error(res, "User not already logged in.");
       }
     } catch (error) {
       console.log("error while getting users", error);

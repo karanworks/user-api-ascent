@@ -1,4 +1,7 @@
 const { PrismaClient } = require("@prisma/client");
+const response = require("../utils/response");
+const { error } = require("console");
+const getLoggedInUser = require("../utils/getLoggedInUser");
 
 const prisma = new PrismaClient();
 
@@ -6,11 +9,8 @@ class RoleController {
   async roleGet(req, res) {
     try {
       const roles = await prisma.role.findMany({});
-      res.json({
-        message: "roles feteched successfully!",
-        data: roles,
-        status: "success",
-      });
+
+      response.success(res, "roles feteched successfully!", roles);
     } catch (error) {
       console.log("error while getting roles ->", error);
     }
@@ -20,30 +20,14 @@ class RoleController {
     try {
       const { name, status } = req.body;
 
-      const token = req.cookies.token;
+      const loggedInUser = await getLoggedInUser(req, res);
 
-      // admin that is creating the campaign
-      const adminUser = await prisma.user.findFirst({
-        where: {
-          token: parseInt(token),
-        },
-      });
-
-      const adminFound = await prisma.user.findFirst({
-        where: {
-          id: adminUser.id,
-        },
-      });
-
-      if (adminFound) {
+      if (loggedInUser) {
         const role = await prisma.role.create({ data: { name, status: 1 } });
-        res.json({
-          message: "role created successfully",
-          data: role,
-          status: "success",
-        });
+
+        response.success(res, "role created successfully", role);
       } else {
-        res.json({ message: "no admin found", status: "failure" });
+        response.error(res, "no admin found");
       }
     } catch (error) {
       console.log("error while creating role ->", error);
@@ -55,21 +39,9 @@ class RoleController {
       const { name } = req.body;
       const { roleId } = req.params;
 
-      const token = req.cookies.token;
+      const loggedInUser = await getLoggedInUser(req, res);
 
-      const adminUser = await prisma.user.findFirst({
-        where: {
-          token: parseInt(token),
-        },
-      });
-
-      const adminFound = await prisma.user.findFirst({
-        where: {
-          id: adminUser.id,
-        },
-      });
-
-      if (adminFound) {
+      if (loggedInUser) {
         const roleToBeEdit = await prisma.role.findFirst({
           where: {
             id: parseInt(roleId),
@@ -86,14 +58,10 @@ class RoleController {
             },
           });
 
-          res.json({
-            message: "role updated successfully",
-            data: updatedRole,
-            status: "success",
-          });
+          response.success(res, "role updated successfully", updatedRole);
         }
       } else {
-        res.json({ message: "admin not found", status: "failure" });
+        response.error(res, "admin not found");
       }
     } catch (error) {
       console.log("error while updating role name ->", error);
@@ -104,37 +72,18 @@ class RoleController {
     try {
       const { roleId } = req.params;
 
-      const token = req.cookies.token;
+      const loggedInUser = await getLoggedInUser(req, res);
 
-      const adminUser = await prisma.user.findFirst({
-        where: {
-          token: parseInt(token),
-        },
-      });
-
-      const adminFound = await prisma.user.findFirst({
-        where: {
-          id: adminUser.id,
-        },
-      });
-
-      if (adminFound) {
+      if (loggedInUser) {
         const deletedRole = await prisma.role.delete({
           where: {
             id: parseInt(roleId),
           },
         });
 
-        res.json({
-          message: "Role deleted succssfully",
-          data: deletedRole,
-          status: "success",
-        });
+        response.success(res, "Role deleted succssfully", deletedRole);
       } else {
-        res.json({
-          message: "admin not found",
-          status: "success",
-        });
+        response.error(res, "admin not found");
       }
     } catch (error) {
       console.log("error while deleting role ->", error);

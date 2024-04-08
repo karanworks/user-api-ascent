@@ -1,13 +1,13 @@
 const { PrismaClient } = require("@prisma/client");
-
 const prisma = new PrismaClient();
-
+const response = require("../utils/response");
+const getToken = require("../utils/getToken");
 class CampaignController {
   async campaignCreatePost(req, res) {
     try {
       const { campaignName, campaignDescription, campaignType } = req.body;
 
-      const token = req.cookies.token;
+      const token = await getToken(req, res);
 
       // admin that is creating the user
       const adminUser = await prisma.user.findFirst({
@@ -24,11 +24,11 @@ class CampaignController {
       });
 
       if (alreadyExists) {
-        res.json({
-          message: "Campaign with same name already exists!",
-          data: alreadyExists,
-          status: "failure",
-        });
+        response.error(
+          res,
+          "Campaign with same name already exists!",
+          alreadyExists
+        );
       } else {
         const newCampaign = await prisma.campaign.create({
           data: {
@@ -39,11 +39,7 @@ class CampaignController {
           },
         });
 
-        res.json({
-          message: "new campaign created!",
-          data: newCampaign,
-          status: "success",
-        });
+        response.success(res, "new campaign created!", newCampaign);
       }
     } catch (error) {
       console.log("error while creating campaign ->", error);
@@ -55,7 +51,7 @@ class CampaignController {
       const { campaignName, campaignDescription, campaignType } = req.body;
       const { campaignId } = req.params;
 
-      const token = req.cookies.token;
+      const token = await getToken(req, res);
 
       // admin that is creating the campaign
       const adminUser = await prisma.user.findFirst({
@@ -80,11 +76,11 @@ class CampaignController {
 
       if (campaignFound) {
         if (alreadyExists) {
-          res.json({
-            message: "Campaign with same name already exists!",
-            data: alreadyExists,
-            status: "failure",
-          });
+          response.error(
+            res,
+            "Campaign with same name already exists!",
+            alreadyExists
+          );
         } else {
           const updatedCampaign = await prisma.campaign.update({
             where: {
@@ -97,14 +93,12 @@ class CampaignController {
             },
           });
 
-          res.json({
-            message: "campaign updated successfully!",
-            data: { updatedCampaign },
-            status: "success",
+          response.success(res, "Campaign updated successfully", {
+            updatedCampaign,
           });
         }
       } else {
-        res.json({ message: "campaign not found!", status: "failure" });
+        response.error(res, "Campaign not found!");
       }
     } catch (error) {
       console.log("error while updating campaign ", error);
@@ -128,15 +122,11 @@ class CampaignController {
           },
         });
 
-        res.status(201).json({
-          message: "campaign deleted successfully!",
-          data: { deletedCampaign },
-          status: "success",
+        response.success(res, "Campaign deleted successfully!", {
+          deletedCampaign,
         });
       } else {
-        res
-          .status(404)
-          .json({ message: "campaign does not exist!", status: "failure" });
+        response.error(res, "Campaign does not exist!");
       }
     } catch (error) {
       console.log("error while deleting campaign ", error);

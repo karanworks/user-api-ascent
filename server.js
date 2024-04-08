@@ -5,7 +5,6 @@ const cors = require("cors");
 // routers
 const homeRouter = require("./routes/home");
 const adminAuthRouter = require("./routes/adminAuth");
-const userAuthRouter = require("./routes/userAuth");
 const adminUsersRouter = require("./routes/adminUsers");
 const adminCampaignsRouter = require("./routes/adminCampaigns");
 const campaignRouter = require("./routes/campaign");
@@ -47,7 +46,6 @@ app.use(cookieParser());
 
 app.use("/", homeRouter);
 app.use("/", adminAuthRouter);
-app.use("/", userAuthRouter);
 app.use("/", adminUsersRouter);
 app.use("/", campaignRouter);
 app.use("/", adminCampaignsRouter);

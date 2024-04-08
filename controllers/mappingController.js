@@ -1,4 +1,5 @@
 const { PrismaClient } = require("@prisma/client");
+const response = require("../utils/response");
 
 const prisma = new PrismaClient();
 
@@ -6,8 +7,6 @@ class MappingController {
   async changePermissionsPost(req, res) {
     try {
       const { menuId, subMenuId, roleId } = req.body;
-
-      console.log("change permission api called ->", menuId, subMenuId, roleId);
 
       const permissionAlreadyExists = await prisma.subMenuAssign.findFirst({
         where: {
@@ -27,10 +26,7 @@ class MappingController {
           },
         });
 
-        res.json({
-          message: "route persmissions revoked successfully",
-          status: "success",
-        });
+        response.success(res, "route persmissions revoked successfully");
       } else {
         const udpatePermissions = await prisma.subMenuAssign.create({
           data: {
@@ -40,10 +36,8 @@ class MappingController {
             status: 1,
           },
         });
-        res.json({
-          message: "route persmissions given successfully",
-          status: "success",
-        });
+
+        response.success(res, "route persmissions given successfully");
       }
     } catch (error) {
       console.log("error while changing route permissions", error);
@@ -98,11 +92,11 @@ class MappingController {
         menu.subItems.push(...matchingSubMenus);
       });
 
-      res.json({
-        message: "route persmissions fetched successfully",
-        data: menusWithSubMenuProperty,
-        status: "success",
-      });
+      response.success(
+        res,
+        "route persmissions fetched successfully",
+        menusWithSubMenuProperty
+      );
     } catch (error) {
       console.log("error while changing getting permissions", error);
     }

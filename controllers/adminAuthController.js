@@ -1,19 +1,16 @@
 const { PrismaClient } = require("@prisma/client");
-
 const prisma = new PrismaClient();
+const response = require("../utils/response");
+const getLoggedInUser = require("../utils/getLoggedInUser");
+const getMenus = require("../utils/getMenus");
 
-class AdminController {
+class AdminAuthController {
   async userRegisterPost(req, res) {
     try {
       const { name, email, password, roleId, agentMobile } = req.body;
       const userIp = req.socket.remoteAddress;
-      const token = req.cookies.token;
 
-      const adminUser = await prisma.user.findFirst({
-        where: {
-          token: parseInt(token),
-        },
-      });
+      const loggedInUser = await getLoggedInUser(req, res);
 
       const alreadyRegistered = await prisma.user.findFirst({
         where: {
@@ -21,20 +18,20 @@ class AdminController {
         },
       });
 
-      if (adminUser) {
+      if (loggedInUser) {
         if (alreadyRegistered) {
           if (alreadyRegistered.email === email) {
-            res.json({
-              message: "User already registered with this CRM Email.",
-              data: alreadyRegistered,
-              status: "failure",
-            });
+            response.error(
+              res,
+              "User already registered with this CRM Email.",
+              alreadyRegistered
+            );
           } else if (alreadyRegistered.agentMobile === agentMobile) {
-            res.json({
-              message: "User already registered with this Mobile no.",
-              data: alreadyRegistered,
-              status: "failure",
-            });
+            response.error(
+              res,
+              "User already registered with this Mobile no.",
+              alreadyRegistered
+            );
           }
         } else {
           const newUser = await prisma.user.create({
@@ -44,25 +41,19 @@ class AdminController {
               password,
               userIp,
               roleId: parseInt(roleId),
-              adminId: adminUser.id,
+              adminId: loggedInUser.id,
               agentMobile,
             },
           });
-          res.status(201).json({
-            message: "user registered successfully!",
-            data: newUser,
-            status: "success",
-          });
+
+          response.success(res, "User registered successfully!", newUser);
         }
       } else {
         const newUser = await prisma.user.create({
           data: { username, email, password, userIp, roleId: 1, agentMobile },
         });
-        res.status(201).json({
-          message: "user registered successfully!",
-          data: newUser,
-          status: "success",
-        });
+
+        response.success(res, "User registered successfully!", newUser);
       }
     } catch (error) {
       console.log("error while registration superadmin ->", error);
@@ -86,10 +77,7 @@ class AdminController {
       });
 
       if (!userFound) {
-        res.status(400).json({
-          message: "no user found with this email",
-          status: "failure",
-        });
+        response.error(res, "No user found with this email!");
       } else if (password === userFound.password) {
         // generates a number between 1000 and 10000 to be used as token
         const loginToken = Math.floor(
@@ -138,50 +126,7 @@ class AdminController {
           },
         });
 
-        const role = await prisma.role.findFirst({
-          where: {
-            id: updatedAdmin.roleId,
-          },
-        });
-
-        const subMenusAssign = await prisma.subMenuAssign.findMany({
-          where: {
-            roleId: role.id,
-          },
-        });
-
-        const submenuIds = subMenusAssign.map((item) => item.subMenuId);
-
-        const subMenu = await prisma.subMenu.findMany({
-          where: {
-            id: {
-              in: submenuIds,
-            },
-          },
-        });
-
-        const uniqueSubMenuid = new Set(subMenu.map((item) => item.menuId));
-
-        const menus = await prisma.menu.findMany({
-          where: {
-            id: {
-              in: [...uniqueSubMenuid],
-            },
-          },
-        });
-
-        const menusWithSubMenuProperty = menus.map((menu) => {
-          return { ...menu, subItems: [] };
-        });
-
-        menusWithSubMenuProperty.forEach((menu) => {
-          // Filter submenus that have matching menuId
-          const matchingSubMenus = subMenu.filter(
-            (sub) => sub.menuId === menu.id
-          );
-          // Push matching submenus into the subMenus array of the menu
-          menu.subItems.push(...matchingSubMenus);
-        });
+        const menus = await getMenus(req, res, updatedAdmin);
 
         const { password, ...adminDataWithoutPassword } = updatedAdmin;
 
@@ -193,17 +138,14 @@ class AdminController {
           secure: true,
         });
 
-        res.status(200).json({
-          message: "user logged in!",
-          data: {
-            ...adminDataWithoutPassword,
-            users: allUsers,
-            menus: menusWithSubMenuProperty,
-          },
-          status: "success",
+        response.success(res, "User logged in!", {
+          ...adminDataWithoutPassword,
+          users: allUsers,
+          menus,
         });
       } else {
-        res.status(400).json({ message: "Wrong password!", status: "failure" });
+        // res.status(400).json({ message: "Wrong password!", status: "failure" });
+        response.error(res, "Wrong password!");
       }
     } catch (error) {
       console.log("error while loggin in user ", error);
@@ -244,17 +186,17 @@ class AdminController {
       if (userFound) {
         if (alreadyRegistered) {
           if (alreadyRegistered.email === email) {
-            res.json({
-              message: "User already registered with this CRM Email.",
-              data: alreadyRegistered,
-              status: "failure",
-            });
+            response.error(
+              res,
+              "User already registered with this CRM Email.",
+              alreadyRegistered
+            );
           } else if (alreadyRegistered.agentMobile === agentMobile) {
-            res.json({
-              message: "User already registered with this Mobile no.",
-              data: alreadyRegistered,
-              status: "failure",
-            });
+            response.error(
+              res,
+              "User already registered with this Mobile no.",
+              alreadyRegistered
+            );
           }
         } else {
           const updatedUser = await prisma.user.update({
@@ -269,13 +211,12 @@ class AdminController {
               roleId: parseInt(roleId),
             },
           });
-          res.json({
-            message: "user updated successfully!",
-            data: { updatedUser },
-          });
+
+          response.success(res, "User updated successfully!", { updatedUser });
         }
       } else {
-        res.json({ message: "user not found!" });
+        // res.json({ message: "user not found!" });
+        response.error(res, "User not found!");
       }
     } catch (error) {
       console.log("error while updating user in admin controller", error);
@@ -300,12 +241,9 @@ class AdminController {
           },
         });
 
-        res.status(201).json({
-          message: "user deleted successfully!",
-          data: { deletedUser },
-        });
+        response.success(res, "User deleted successfully!", { deletedUser });
       } else {
-        res.status(404).json({ message: "user does not exist!" });
+        response.error(res, "User does not exist! ");
       }
     } catch (error) {
       console.log("error while deleting user ", error);
@@ -354,63 +292,17 @@ class AdminController {
           },
         });
 
-        const role = await prisma.role.findFirst({
-          where: {
-            id: loggedInUser.roleId,
-          },
-        });
-
-        const subMenusAssign = await prisma.subMenuAssign.findMany({
-          where: {
-            roleId: role.id,
-          },
-        });
-
-        const submenuIds = subMenusAssign.map((item) => item.subMenuId);
-
-        const subMenu = await prisma.subMenu.findMany({
-          where: {
-            id: {
-              in: submenuIds,
-            },
-          },
-        });
-
-        const uniqueSubMenuid = new Set(subMenu.map((item) => item.menuId));
-
-        const menus = await prisma.menu.findMany({
-          where: {
-            id: {
-              in: [...uniqueSubMenuid],
-            },
-          },
-        });
-
-        const menusWithSubMenuProperty = menus.map((menu) => {
-          return { ...menu, subItems: [] };
-        });
-
-        menusWithSubMenuProperty.forEach((menu) => {
-          // Filter submenus that have matching menuId
-          const matchingSubMenus = subMenu.filter(
-            (sub) => sub.menuId === menu.id
-          );
-          // Push matching submenus into the subMenus array of the menu
-          menu.subItems.push(...matchingSubMenus);
-        });
+        const menus = await getMenus(req, res, updatedAdmin);
 
         const { password, ...adminDataWithoutPassword } = loggedInUser;
 
-        res.status(200).json({
-          message: "user logged in with token!",
-          data: {
-            ...adminDataWithoutPassword,
-            users,
-            menus: menusWithSubMenuProperty,
-          },
-          status: "success",
+        response.success(res, "User logged in with token!", {
+          ...adminDataWithoutPassword,
+          users,
+          menus,
         });
       } else {
+        // for some reason if we remove status code from response logout thunk in frontend gets triggered multiple times
         res
           .status(401)
           .json({ message: "user not already logged in.", status: "failure" });
@@ -422,11 +314,11 @@ class AdminController {
   async adminLogoutGet(req, res) {
     try {
       res.clearCookie("token");
-      res.send({ message: "user logged out successflly!" });
+      response.success(res, "User logged out successflly!");
     } catch (error) {
       console.log("error while loggin in user ", error);
     }
   }
 }
 
-module.exports = new AdminController();
+module.exports = new AdminAuthController();

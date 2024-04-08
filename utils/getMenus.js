@@ -1,20 +1,15 @@
 const { PrismaClient } = require("@prisma/client");
+const getLoggedInUser = require("./getLoggedInUser");
 
 const prisma = new PrismaClient();
 
-async function getMenus(req, res) {
-  const token = req.cookies.token;
-
-  // admin that is creating the campaign
-  const adminUser = await prisma.user.findFirst({
-    where: {
-      token: parseInt(token),
-    },
-  });
+async function getMenus(req, res, user) {
+  // when we log in we don't have a token hence we can't get the logged in user that's getting user as argument while logging in
+  const loggedInUser = user || (await getLoggedInUser(req, res));
 
   const role = await prisma.role.findFirst({
     where: {
-      id: adminUser.id,
+      id: loggedInUser.id,
     },
   });
 

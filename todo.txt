@@ -1,0 +1,2 @@
+1. While updating campaign's description it throws "campaign with same name already exists " error
+2. crm field position update bug
