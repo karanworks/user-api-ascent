@@ -5,16 +5,10 @@ const adminController = require("../controllers/adminController");
 adminAuthRouter.post("/login", adminController.userLoginPost);
 adminAuthRouter.get("/login", adminController.userLoginGet);
 adminAuthRouter.post("/register", adminController.userRegisterPost);
-adminAuthRouter.post(
-  "/:userId/user/register",
-  adminController.userRegisterPost
-);
-adminAuthRouter.patch(
-  "/:adminId/user/:userId/edit",
-  adminController.userUpdatePatch
-);
+adminAuthRouter.post("/user/register", adminController.userRegisterPost);
+adminAuthRouter.patch("/user/:userId/edit", adminController.userUpdatePatch);
 adminAuthRouter.delete(
-  "/:adminId/user/:userId/delete",
+  "/user/:userId/delete",
   adminController.userRemoveDelete
 );
 adminAuthRouter.get("/logout", adminController.adminLogoutGet);

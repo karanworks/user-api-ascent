@@ -1,5 +1,4 @@
 const { PrismaClient } = require("@prisma/client");
-const { parse } = require("path");
 
 const prisma = new PrismaClient();
 
@@ -8,7 +7,13 @@ class AdminController {
     try {
       const { name, email, password, roleId, agentMobile } = req.body;
       const userIp = req.socket.remoteAddress;
-      const { userId } = req.params;
+      const token = req.cookies.token;
+
+      const adminUser = await prisma.user.findFirst({
+        where: {
+          token: parseInt(token),
+        },
+      });
 
       const alreadyRegistered = await prisma.user.findFirst({
         where: {
@@ -16,7 +21,7 @@ class AdminController {
         },
       });
 
-      if (userId) {
+      if (adminUser) {
         if (alreadyRegistered) {
           if (alreadyRegistered.email === email) {
             res.json({
@@ -39,7 +44,7 @@ class AdminController {
               password,
               userIp,
               roleId: parseInt(roleId),
-              adminId: parseInt(userId),
+              adminId: adminUser.id,
               agentMobile,
             },
           });

@@ -7,12 +7,18 @@ class CampaignController {
     try {
       const { campaignName, campaignDescription, campaignType } = req.body;
 
+      const token = req.cookies.token;
+
       // admin that is creating the user
-      const adminId = parseInt(req.params.adminId);
+      const adminUser = await prisma.user.findFirst({
+        where: {
+          token: parseInt(token),
+        },
+      });
 
       const alreadyExists = await prisma.campaign.findFirst({
         where: {
-          adminId: parseInt(adminId),
+          adminId: adminUser.id,
           campaignName,
         },
       });
@@ -29,7 +35,7 @@ class CampaignController {
             campaignName,
             campaignDescription,
             campaignType,
-            adminId,
+            adminId: adminUser.id,
           },
         });
 
@@ -47,7 +53,16 @@ class CampaignController {
   async campaignUpdatePatch(req, res) {
     try {
       const { campaignName, campaignDescription, campaignType } = req.body;
-      const { campaignId, adminId } = req.params;
+      const { campaignId } = req.params;
+
+      const token = req.cookies.token;
+
+      // admin that is creating the campaign
+      const adminUser = await prisma.user.findFirst({
+        where: {
+          token: parseInt(token),
+        },
+      });
 
       // finding campaign from id
       const campaignFound = await prisma.campaign.findFirst({
@@ -58,7 +73,7 @@ class CampaignController {
 
       const alreadyExists = await prisma.campaign.findFirst({
         where: {
-          adminId: parseInt(adminId),
+          adminId: adminUser.id,
           campaignName,
         },
       });
