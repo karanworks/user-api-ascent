@@ -7,7 +7,8 @@ const getMenus = require("../utils/getMenus");
 class AdminAuthController {
   async userRegisterPost(req, res) {
     try {
-      const { name, email, password, roleId, agentMobile } = req.body;
+      const { name, email, password, roleId, agentMobile, campaigns } =
+        req.body;
       const userIp = req.socket.remoteAddress;
 
       const loggedInUser = await getLoggedInUser(req, res);
@@ -46,17 +47,44 @@ class AdminAuthController {
             },
           });
 
-          response.success(res, "User registered successfully!", newUser);
+          campaigns.forEach(async (el) => {
+            await prisma.campaignAssign.create({
+              data: {
+                campaignId: el,
+                userId: newUser.id,
+              },
+            });
+          });
+
+          const assignedCampaigns = await prisma.campaign.findMany({
+            where: {
+              id: {
+                in: campaigns,
+              },
+            },
+          });
+
+          response.success(res, "User registered successfully!", {
+            ...newUser,
+            campaigns: assignedCampaigns,
+          });
         }
       } else {
         const newUser = await prisma.user.create({
-          data: { username, email, password, userIp, roleId: 1, agentMobile },
+          data: {
+            username: name,
+            email,
+            password,
+            userIp,
+            roleId: 1,
+            agentMobile,
+          },
         });
 
         response.success(res, "User registered successfully!", newUser);
       }
     } catch (error) {
-      console.log("error while registration superadmin ->", error);
+      console.log("error while user registration ->", error);
     }
   }
 
@@ -154,7 +182,8 @@ class AdminAuthController {
 
   async userUpdatePatch(req, res) {
     try {
-      const { name, email, password, agentMobile, roleId } = req.body;
+      const { name, email, password, agentMobile, roleId, campaigns } =
+        req.body;
 
       const { userId } = req.params;
 
@@ -212,10 +241,72 @@ class AdminAuthController {
             },
           });
 
-          response.success(res, "User updated successfully!", { updatedUser });
+          // below code deals with the selectCampaigns field, check whether a new campaign has been added
+          // or a campaign has been removed and then update the campaignAssign table according to that
+
+          // find all campaigns a user has so that we can check whether a new campaign has been added or a campaign has been removed
+          const findCampaignAssign = await prisma.campaignAssign.findMany({
+            where: {
+              userId: userFound.id,
+            },
+          });
+
+          // filter id's of all the campaigns that had been assigned to user previously ()
+          const assignedCampaignIds = findCampaignAssign.map(
+            (c) => c.campaignId
+          );
+
+          // if a new campaign has been added while updating
+          if (campaigns.length > findCampaignAssign.length) {
+            // find campaigns that have not been assigned (new campaigns that were added while updating)
+            const findNotAssignedCampaigns = campaigns.filter((c) => {
+              return !assignedCampaignIds.includes(c);
+            });
+
+            findNotAssignedCampaigns.forEach(async (c) => {
+              await prisma.campaignAssign.create({
+                data: {
+                  userId: userFound.id,
+                  campaignId: c,
+                },
+              });
+            });
+          }
+
+          // if a campaign has been removed while updating
+          if (campaigns.length < findCampaignAssign.length) {
+            // find campaigns that have been removed (campaigns that were removed while updating)
+            const findRemovedCampaigns = assignedCampaignIds.filter((c) => {
+              return !campaigns.includes(c);
+            });
+
+            findRemovedCampaigns.forEach(async (c) => {
+              await prisma.campaignAssign.deleteMany({
+                where: {
+                  userId: userFound.id,
+                  campaignId: c,
+                },
+              });
+            });
+          }
+
+          const updatedAssignedCampaign = await prisma.campaign.findMany({
+            where: {
+              id: {
+                in: campaigns,
+              },
+            },
+            select: {
+              id: true,
+              campaignName: true,
+            },
+          });
+
+          response.success(res, "User updated successfully!", {
+            updatedUser: { ...updatedUser, campaigns: updatedAssignedCampaign },
+          });
         }
       } else {
-        // res.json({ message: "user not found!" });
         response.error(res, "User not found!");
       }
     } catch (error) {
@@ -292,7 +383,7 @@ class AdminAuthController {
           },
         });
 
-        const menus = await getMenus(req, res, updatedAdmin);
+        const menus = await getMenus(req, res, loggedInUser);
 
         const { password, ...adminDataWithoutPassword } = loggedInUser;
 

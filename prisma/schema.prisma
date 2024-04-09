@@ -46,6 +46,15 @@ model Campaign {
 
 }
 
+model CampaignAssign {
+  id Int @id @default(autoincrement())
+  campaignId Int
+  userId Int
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now())
+}
+
+
 model CRMField{
   id Int @id @default(autoincrement())
   caption String 
