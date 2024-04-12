@@ -17,7 +17,14 @@ class AdminCampaignsController {
             id: true,
             email: true,
             password: true,
-            campaigns: true,
+            campaigns: {
+              select: {
+                id: true,
+                campaignName: true,
+                campaignDescription: true,
+                crmFields: true,
+              },
+            },
           },
         });
 
