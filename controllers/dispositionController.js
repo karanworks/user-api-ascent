@@ -8,14 +8,7 @@ class DispositionController {
   async createDispositionPost(req, res) {
     try {
       const { dispositionName, options, campaignId } = req.body;
-      console.log(
-        "Disposition Name->",
-        dispositionName,
-        "Disposition options ->",
-        options,
-        "Campaign Id ->",
-        campaignId
-      );
+
       const loggedInUser = await getLoggedInUser(req, res);
 
       if (loggedInUser) {
@@ -28,8 +21,7 @@ class DispositionController {
           },
         });
 
-        console.log("newly created disposition ->", newDisposition);
-        response.success(res, "Disposition created!".newDisposition);
+        response.success(res, "Disposition created!", newDisposition);
       } else {
         response.error(res, "No logged in user!");
       }
@@ -37,6 +29,80 @@ class DispositionController {
       console.log("error while creating disposition ->", error);
     }
   }
+
+  async updateDispositionPatch(req, res) {
+    try {
+      const { dispositionName, options } = req.body;
+      const { campaignId, dispositionId } = req.params;
+
+      const loggedInUser = await getLoggedInUser(req, res);
+
+      const alreadyExistedDisposition = await prisma.disposition.findFirst({
+        where: {
+          id: parseInt(dispositionId),
+          campaignId: parseInt(campaignId),
+        },
+      });
+
+      if (loggedInUser) {
+        if (alreadyExistedDisposition) {
+          if (alreadyExistedDisposition.dispositionName === dispositionName) {
+            const updatedDisposition = await prisma.disposition.update({
+              where: {
+                id: parseInt(dispositionId),
+              },
+              data: {
+                dispositionName,
+                options: JSON.stringify(options),
+              },
+            });
+
+            response.success(res, "Disposition updated!", updatedDisposition);
+          } else {
+            response.error(res, "Disposition with same name already exists.");
+          }
+        }
+      } else {
+        response.error(res, "No logged in user!");
+      }
+    } catch (error) {
+      console.log("error while creating disposition ->", error);
+    }
+  }
+  async removeDispositionDelete(req, res) {
+    try {
+      const { dispositionId, campaignId } = req.params;
+
+      const loggedInUser = await getLoggedInUser(req, res);
+
+      const ifExists = await prisma.disposition.findFirst({
+        where: {
+          id: parseInt(dispositionId),
+          campaignId: parseInt(campaignId),
+        },
+      });
+
+      if (loggedInUser) {
+        if (ifExists) {
+          const deletedDisposition = await prisma.disposition.delete({
+            where: {
+              id: ifExists.id,
+              campaignId: parseInt(campaignId),
+            },
+          });
+
+          response.success(res, "Disposition deleted!", deletedDisposition);
+        } else {
+          response.error(res, "Disposition not found!");
+        }
+      } else {
+        response.error(res, "No logged in user!");
+      }
+    } catch (error) {
+      console.log("error while creating disposition ->", error);
+    }
+  }
+
   async getDispositions(req, res) {
     try {
       const token = await getToken(req, res);
@@ -67,8 +133,6 @@ class DispositionController {
         });
 
         const { password, ...adminDataWithoutPassword } = loggedInUser;
-
-        console.log("disposition data ->", adminDataWithoutPassword);
 
         response.success(res, "Dispositions fetched", {
           ...adminDataWithoutPassword,
