@@ -13,25 +13,31 @@ class CRMController {
       const formData = {};
 
       const formDataValues = Object.keys(body).filter(
-        (key) => key !== "campaignId"
+        (key) =>
+          key !== "campaignId" &&
+          key !== "disposition" &&
+          key !== "subdisposition"
       );
 
       for (let i = 0; i < formDataValues.length; i++) {
         formData[`col_${i + 1}`] = body[formDataValues[i]];
       }
 
-      console.log("form data values after modification ->", {
-        addedBy: loggedInUser.id,
-        status: 1,
-        campaignId: body.campaignId,
-        ...formData,
-      });
+      console.log("crm form data body ->", body);
+      // console.log("form data values after modification ->", {
+      //   addedBy: loggedInUser.id,
+      //   status: 1,
+      //   campaignId: body.campaignId,
+      //   ...formData,
+      // });
 
       await prisma.CRMFormData.create({
         data: {
           addedBy: loggedInUser.id,
           status: 1,
           campaignId: body.campaignId,
+          disposition: body.disposition,
+          subDisposition: body.subDisposition,
           ...formData,
         },
       });

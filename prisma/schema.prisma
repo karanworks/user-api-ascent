@@ -20,7 +20,7 @@ model User {
   password String
   agentMobile String? @unique
   token    Int      @default(0)
-  campaigns Campaign[]
+  campaigns Campaign[] 
   users   Json?
   roleId Int
   adminId Int?
@@ -44,7 +44,6 @@ model Campaign {
   adminId Int?
   createdAt DateTime @default(now())
   updatedAt DateTime @default(now())
-
 }
 
 model CampaignAssign {
@@ -140,6 +139,8 @@ model CRMFormData {
   addedBy Int
   status Int
   campaignId Int
+  disposition String
+  subDisposition String
   col_1 String?
   col_2 String?
   col_3 String?
@@ -193,3 +194,5 @@ model CRMFormData {
   createdAt DateTime @default(now())
   updatedAt DateTime @default(now())
 }
+
+

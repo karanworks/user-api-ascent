@@ -23,6 +23,7 @@ class AdminCampaignsController {
                 campaignName: true,
                 campaignDescription: true,
                 crmFields: true,
+                dispositions: true,
               },
             },
           },

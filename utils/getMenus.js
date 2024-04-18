@@ -9,7 +9,7 @@ async function getMenus(req, res, user) {
 
   const role = await prisma.role.findFirst({
     where: {
-      id: loggedInUser.id,
+      id: loggedInUser.roleId,
     },
   });
 
