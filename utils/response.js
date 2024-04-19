@@ -7,8 +7,8 @@ class Response {
     });
   }
 
-  error(res, message, status = "failure") {
-    return res.json({ message, status });
+  error(res, message, data = {}, status = "failure") {
+    return res.json({ message, data, status });
   }
 }
 

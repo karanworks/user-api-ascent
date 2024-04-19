@@ -1,4 +1,5 @@
 const { PrismaClient } = require("@prisma/client");
+const response = require("../utils/response");
 const prisma = new PrismaClient();
 
 class MonitoringController {
@@ -17,7 +18,7 @@ class MonitoringController {
 
       if (assignedCampaigns.length === 0) {
         console.log("No assigned campaigns found.");
-        return; // Exit the function or handle the scenario appropriately
+        return;
       }
 
       await Promise.all(
@@ -57,7 +58,9 @@ class MonitoringController {
         })
       );
 
-      console.log("unique users here ->", uniqueUsers);
+      response.success(res, "Users fetched successflly", {
+        users: uniqueUsers,
+      });
     } catch (error) {
       console.log("error in monitoring data", error);
     }
