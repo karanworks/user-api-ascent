@@ -5,6 +5,58 @@ const { PrismaClient } = require("@prisma/client");
 const prisma = new PrismaClient();
 
 class DispositionController {
+  async getDispositions(req, res) {
+    try {
+      const token = await getToken(req, res);
+
+      if (token) {
+        const { isActive } = await prisma.user.findFirst({
+          where: {
+            token: parseInt(token),
+          },
+        });
+
+        if (isActive) {
+          const loggedInUser = await prisma.user.findFirst({
+            where: {
+              token: parseInt(token),
+            },
+            select: {
+              id: true,
+              email: true,
+              password: true,
+              campaigns: {
+                select: {
+                  id: true,
+                  campaignName: true,
+                  campaignDescription: true,
+                  campaignType: true,
+                  callback: true,
+                  dnc: true,
+                  amd: true,
+                  crmFields: true,
+                  dispositions: true,
+                },
+              },
+            },
+          });
+
+          const { password, ...adminDataWithoutPassword } = loggedInUser;
+
+          response.success(res, "Dispositions fetched", {
+            ...adminDataWithoutPassword,
+          });
+        } else {
+          response.error(res, "User not active");
+        }
+      } else {
+        response.error(res, "user not logged in.");
+      }
+    } catch (error) {
+      console.log("error while getting dispositions data", error);
+    }
+  }
+
   async createDispositionPost(req, res) {
     try {
       const { dispositionName, options, campaignId } = req.body;
@@ -100,48 +152,6 @@ class DispositionController {
       }
     } catch (error) {
       console.log("error while creating disposition ->", error);
-    }
-  }
-
-  async getDispositions(req, res) {
-    try {
-      const token = await getToken(req, res);
-
-      if (token) {
-        const loggedInUser = await prisma.user.findFirst({
-          where: {
-            token: parseInt(token),
-          },
-          select: {
-            id: true,
-            email: true,
-            password: true,
-            campaigns: {
-              select: {
-                id: true,
-                campaignName: true,
-                campaignDescription: true,
-                campaignType: true,
-                callback: true,
-                dnc: true,
-                amd: true,
-                crmFields: true,
-                dispositions: true,
-              },
-            },
-          },
-        });
-
-        const { password, ...adminDataWithoutPassword } = loggedInUser;
-
-        response.success(res, "Dispositions fetched", {
-          ...adminDataWithoutPassword,
-        });
-      } else {
-        response.error(res, "user not logged in.");
-      }
-    } catch (error) {
-      console.log("error while getting dispositions data", error);
     }
   }
 }

@@ -9,34 +9,44 @@ class AdminCrmFieldsController {
       const token = await getToken(req, res);
 
       if (token) {
-        const loggedInUser = await prisma.user.findFirst({
+        const { isActive } = await prisma.user.findFirst({
           where: {
             token: parseInt(token),
           },
-          select: {
-            id: true,
-            email: true,
-            password: true,
-            campaigns: {
-              select: {
-                id: true,
-                campaignName: true,
-                campaignDescription: true,
-                campaignType: true,
-                callback: true,
-                dnc: true,
-                amd: true,
-                crmFields: true,
+        });
+
+        if (isActive) {
+          const loggedInUser = await prisma.user.findFirst({
+            where: {
+              token: parseInt(token),
+            },
+            select: {
+              id: true,
+              email: true,
+              password: true,
+              campaigns: {
+                select: {
+                  id: true,
+                  campaignName: true,
+                  campaignDescription: true,
+                  campaignType: true,
+                  callback: true,
+                  dnc: true,
+                  amd: true,
+                  crmFields: true,
+                },
               },
             },
-          },
-        });
+          });
 
-        const { password, ...adminDataWithoutPassword } = loggedInUser;
+          const { password, ...adminDataWithoutPassword } = loggedInUser;
 
-        response.success(res, "campaigns with crm fields fetched fetched!", {
-          ...adminDataWithoutPassword,
-        });
+          response.success(res, "campaigns with crm fields fetched fetched!", {
+            ...adminDataWithoutPassword,
+          });
+        } else {
+          response.error(res, "User not active");
+        }
       } else {
         response.error(res, "admin not already logged in.");
       }

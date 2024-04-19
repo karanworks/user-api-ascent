@@ -1,8 +1,33 @@
 const { PrismaClient } = require("@prisma/client");
 const response = require("../utils/response");
+const getToken = require("../utils/getToken");
 const prisma = new PrismaClient();
 
 class MonitoringController {
+  async monitoringGet(req, res) {
+    try {
+      const token = await getToken(req, res);
+
+      if (token) {
+        const { isActive } = await prisma.user.findFirst({
+          where: {
+            token: parseInt(token),
+          },
+        });
+
+        if (isActive) {
+          // DO SOMETHING IN FUTURE
+        } else {
+          response.error(res, "User not active");
+        }
+      } else {
+        response.error(res, "User not logged in!");
+      }
+    } catch (error) {
+      console.log("error in get monitoring data ->", error);
+    }
+  }
+
   async monitoringData(req, res) {
     try {
       const { campaigns } = req.body;

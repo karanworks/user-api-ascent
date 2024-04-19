@@ -1,9 +1,37 @@
 const { PrismaClient } = require("@prisma/client");
 const response = require("../utils/response");
+const getMenus = require("../utils/getMenus");
+const getToken = require("../utils/getToken");
 
 const prisma = new PrismaClient();
 
 class MappingController {
+  async getMapping(req, res) {
+    try {
+      const token = await getToken(req, res);
+
+      if (token) {
+        const { isActive } = await prisma.user.findFirst({
+          where: {
+            token: parseInt(token),
+          },
+        });
+
+        if (isActive) {
+          const menus = await getMenus(req, res);
+
+          response.success(res, "Mapping data fetched successfully!", menus);
+        } else {
+          response.error(res, "User not active");
+        }
+      } else {
+        response.error(res, "User not logged in!");
+      }
+    } catch (error) {
+      console.log("error in get mapping", error);
+    }
+  }
+
   async changePermissionsPost(req, res) {
     try {
       const { menuId, subMenuId, roleId } = req.body;

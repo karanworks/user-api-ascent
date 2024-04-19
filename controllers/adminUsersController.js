@@ -9,63 +9,73 @@ class AdminUsers {
       const token = await getToken(req, res);
 
       if (token) {
-        const loggedInUser = await prisma.user.findFirst({
+        const { isActive } = await prisma.user.findFirst({
           where: {
             token: parseInt(token),
           },
-          select: {
-            id: true,
-            email: true,
-            password: true,
-          },
         });
 
-        const users = await prisma.user.findMany({
-          where: {
-            adminId: loggedInUser.id,
-          },
-          select: {
-            id: true,
-            username: true,
-            password: true,
-            email: true,
-            agentMobile: true,
-            roleId: true,
-          },
-        });
-
-        const usersWithCampaigns = [];
-
-        for (const user of users) {
-          const campaignAssignments = await prisma.campaignAssign.findMany({
+        if (isActive) {
+          const loggedInUser = await prisma.user.findFirst({
             where: {
-              userId: user.id,
+              token: parseInt(token),
             },
             select: {
-              campaignId: true,
+              id: true,
+              email: true,
+              password: true,
             },
           });
 
-          const campaigns = await prisma.campaign.findMany({
+          const users = await prisma.user.findMany({
             where: {
-              id: {
-                in: campaignAssignments.map((ca) => ca.campaignId),
-              },
+              adminId: loggedInUser.id,
+            },
+            select: {
+              id: true,
+              username: true,
+              password: true,
+              email: true,
+              agentMobile: true,
+              roleId: true,
             },
           });
 
-          usersWithCampaigns.push({
-            ...user,
-            campaigns,
+          const usersWithCampaigns = [];
+
+          for (const user of users) {
+            const campaignAssignments = await prisma.campaignAssign.findMany({
+              where: {
+                userId: user.id,
+              },
+              select: {
+                campaignId: true,
+              },
+            });
+
+            const campaigns = await prisma.campaign.findMany({
+              where: {
+                id: {
+                  in: campaignAssignments.map((ca) => ca.campaignId),
+                },
+              },
+            });
+
+            usersWithCampaigns.push({
+              ...user,
+              campaigns,
+            });
+          }
+
+          const { password, ...adminDataWithoutPassword } = loggedInUser;
+
+          response.success(res, "Users fetched", {
+            ...adminDataWithoutPassword,
+            users: usersWithCampaigns,
           });
+        } else {
+          response.error(res, "User not active");
         }
-
-        const { password, ...adminDataWithoutPassword } = loggedInUser;
-
-        response.success(res, "Users fetched", {
-          ...adminDataWithoutPassword,
-          users: usersWithCampaigns,
-        });
       } else {
         response.error(res, "User not already logged in.");
       }

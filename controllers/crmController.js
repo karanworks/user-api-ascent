@@ -4,6 +4,30 @@ const getLoggedInUser = require("../utils/getLoggedInUser");
 const response = require("../utils/response");
 
 class CRMController {
+  async getCRMData(req, res) {
+    try {
+      const token = await getToken(req, res);
+
+      if (token) {
+        const { isActive } = await prisma.user.findFirst({
+          where: {
+            token: parseInt(token),
+          },
+        });
+
+        if (isActive) {
+          // DO SOMETHING IN FUTURE
+        } else {
+          response.error(res, "User not active");
+        }
+      } else {
+        response.error(res, "User not logged in");
+      }
+    } catch (error) {
+      console.log("error in get crm data controller", error);
+    }
+  }
+
   async createCRMFormDataPost(req, res) {
     try {
       const { body } = req;

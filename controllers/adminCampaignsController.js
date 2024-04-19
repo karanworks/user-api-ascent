@@ -9,33 +9,43 @@ class AdminCampaignsController {
       const token = await getToken(req, res);
 
       if (token) {
-        const loggedInUser = await prisma.user.findFirst({
+        const { isActive } = await prisma.user.findFirst({
           where: {
             token: parseInt(token),
           },
-          select: {
-            id: true,
-            email: true,
-            password: true,
-            campaigns: {
-              select: {
-                id: true,
-                campaignName: true,
-                campaignDescription: true,
-                crmFields: true,
-                dispositions: true,
+        });
+
+        if (isActive) {
+          const loggedInUser = await prisma.user.findFirst({
+            where: {
+              token: parseInt(token),
+            },
+            select: {
+              id: true,
+              email: true,
+              password: true,
+              campaigns: {
+                select: {
+                  id: true,
+                  campaignName: true,
+                  campaignDescription: true,
+                  crmFields: true,
+                  dispositions: true,
+                },
               },
             },
-          },
-        });
+          });
 
-        const { password, ...adminDataWithoutPassword } = loggedInUser;
+          const { password, ...adminDataWithoutPassword } = loggedInUser;
 
-        response.success(res, "Campaigns fetched", {
-          ...adminDataWithoutPassword,
-        });
+          response.success(res, "Campaigns fetched", {
+            ...adminDataWithoutPassword,
+          });
+        } else {
+          response.error(res, "User not active!");
+        }
       } else {
-        response.error("user not already logged in.");
+        response.error(res, "user not already logged in.");
       }
     } catch (error) {
       console.log("error while getting admin campaigns", error);
