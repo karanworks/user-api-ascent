@@ -9,6 +9,8 @@ async function session(adminId, userId) {
     },
   });
 
+  const lastActive = new Date();
+
   if (adminId) {
     // update session if there is a session that already exists for this user
     if (sessionAlreadyExists) {
@@ -19,7 +21,7 @@ async function session(adminId, userId) {
         },
 
         data: {
-          lastActive: new Date(),
+          lastActive,
         },
       });
     } else {
@@ -32,6 +34,8 @@ async function session(adminId, userId) {
       });
     }
   }
+
+  return lastActive;
 }
 
 module.exports = session;

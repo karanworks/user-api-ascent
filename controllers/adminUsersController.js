@@ -72,11 +72,15 @@ class AdminUsers {
           const { password, ...adminDataWithoutPassword } = loggedInUser;
 
           // update the session
-          session(loggedInUser.adminId, loggedInUser.id);
+          const lastActiveTime = await session(
+            loggedInUser.adminId,
+            loggedInUser.id
+          );
 
           response.success(res, "Users fetched", {
             ...adminDataWithoutPassword,
             users: usersWithCampaigns,
+            lastActiveTime,
           });
         } else {
           response.error(res, "User not active");

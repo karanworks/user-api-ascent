@@ -41,10 +41,14 @@ class AdminCampaignsController {
           const { password, ...adminDataWithoutPassword } = loggedInUser;
 
           // update the session
-          session(loggedInUser.adminId, loggedInUser.id);
+          const lastActiveTime = await session(
+            loggedInUser.adminId,
+            loggedInUser.id
+          );
 
           response.success(res, "Campaigns fetched", {
             ...adminDataWithoutPassword,
+            lastActiveTime,
           });
         } else {
           response.error(res, "User not active!");

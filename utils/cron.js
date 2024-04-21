@@ -13,6 +13,7 @@ const cronJob = cron.schedule(
       const lastActiveTime = new Date(session.lastActive);
       const timeDifference =
         (currentUTC.getTime() - lastActiveTime.getTime()) / 1000; // Convert milliseconds to seconds
+
       if (timeDifference > inactiveTimeLimit) {
         const inActiveUser = await prisma.user.findFirst({
           where: {
@@ -29,9 +30,6 @@ const cronJob = cron.schedule(
             isActive: 0,
           },
         });
-        // console.log(
-        //   `${inActiveUser.username} is inactive for more than ${inactiveTimeLimit} seconds.`
-        // );
       }
     });
   },
