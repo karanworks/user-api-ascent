@@ -2,6 +2,8 @@ const { PrismaClient } = require("@prisma/client");
 const prisma = new PrismaClient();
 const getLoggedInUser = require("../utils/getLoggedInUser");
 const response = require("../utils/response");
+const session = require("../utils/session");
+const { log } = require("console");
 
 class CRMController {
   async getCRMData(req, res) {
@@ -9,14 +11,22 @@ class CRMController {
       const token = await getToken(req, res);
 
       if (token) {
-        const { isActive } = await prisma.user.findFirst({
+        const loggedInUser = await prisma.user.findFirst({
           where: {
             token: parseInt(token),
           },
         });
 
-        if (isActive) {
+        if (loggedInUser.isActive) {
           // DO SOMETHING IN FUTURE
+
+          // update the session
+          session(loggedInUser.adminId, loggedInUser.id);
+
+          response.success(
+            res,
+            "nothing to do in getcrmdata api, will do something in future"
+          );
         } else {
           response.error(res, "User not active");
         }

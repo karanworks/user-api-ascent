@@ -1,6 +1,7 @@
 const express = require("express");
 const app = express();
 const cors = require("cors");
+const cronJob = require("./utils/cron");
 
 // routers
 const homeRouter = require("./routes/home");
@@ -46,6 +47,7 @@ app.use((req, res, next) => {
 });
 
 app.use(cookieParser());
+cronJob.start();
 
 app.use("/", homeRouter);
 app.use("/", adminAuthRouter);

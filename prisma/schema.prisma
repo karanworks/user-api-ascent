@@ -11,6 +11,7 @@ generator client {
 datasource db {
   provider = "mysql"
   url      = env("DATABASE_URL")
+  
 }
 
 model User {
@@ -196,3 +197,18 @@ model CRMFormData {
 }
 
 
+model LoginActivity {
+  id Int @id @default(autoincrement())
+  userId Int
+  loginTime DateTime
+  logoutTime DateTime
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now())
+}
+model Session {
+  id Int @id @default(autoincrement())
+  userId Int
+  lastActive DateTime 
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now())
+}

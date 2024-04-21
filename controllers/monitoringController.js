@@ -1,6 +1,7 @@
 const { PrismaClient } = require("@prisma/client");
 const response = require("../utils/response");
 const getToken = require("../utils/getToken");
+const session = require("../utils/session");
 const prisma = new PrismaClient();
 
 class MonitoringController {
@@ -9,14 +10,22 @@ class MonitoringController {
       const token = await getToken(req, res);
 
       if (token) {
-        const { isActive } = await prisma.user.findFirst({
+        const loggedInUser = await prisma.user.findFirst({
           where: {
             token: parseInt(token),
           },
         });
 
-        if (isActive) {
+        if (loggedInUser.isActive) {
           // DO SOMETHING IN FUTURE
+
+          // update the session
+          session(loggedInUser.adminId, loggedInUser.id);
+
+          response.success(
+            res,
+            "nothing to do in monitoringGet api, will do something in future"
+          );
         } else {
           response.error(res, "User not active");
         }

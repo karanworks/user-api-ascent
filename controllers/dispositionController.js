@@ -2,6 +2,7 @@ const getLoggedInUser = require("../utils/getLoggedInUser");
 const getToken = require("../utils/getToken");
 const response = require("../utils/response");
 const { PrismaClient } = require("@prisma/client");
+const session = require("../utils/session");
 const prisma = new PrismaClient();
 
 class DispositionController {
@@ -25,6 +26,7 @@ class DispositionController {
               id: true,
               email: true,
               password: true,
+              adminId: true,
               campaigns: {
                 select: {
                   id: true,
@@ -42,6 +44,9 @@ class DispositionController {
           });
 
           const { password, ...adminDataWithoutPassword } = loggedInUser;
+
+          // update the session
+          session(loggedInUser.adminId, loggedInUser.id);
 
           response.success(res, "Dispositions fetched", {
             ...adminDataWithoutPassword,
