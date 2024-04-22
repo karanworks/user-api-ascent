@@ -1,6 +1,7 @@
 const { PrismaClient } = require("@prisma/client");
 const response = require("../utils/response");
 const getToken = require("../utils/getToken");
+const session = require("../utils/session");
 const prisma = new PrismaClient();
 
 class AdminCrmFieldsController {
@@ -24,6 +25,7 @@ class AdminCrmFieldsController {
               id: true,
               email: true,
               password: true,
+              adminId: true,
               campaigns: {
                 select: {
                   id: true,
@@ -40,6 +42,9 @@ class AdminCrmFieldsController {
           });
 
           const { password, ...adminDataWithoutPassword } = loggedInUser;
+
+          // update the session
+          session(loggedInUser.adminId, loggedInUser.id);
 
           response.success(res, "campaigns with crm fields fetched fetched!", {
             ...adminDataWithoutPassword,

@@ -2,6 +2,7 @@ const { PrismaClient } = require("@prisma/client");
 const prisma = new PrismaClient();
 const response = require("../utils/response");
 const getToken = require("../utils/getToken");
+const session = require("../utils/session");
 
 class AdminUsers {
   async adminUsersGet(req, res) {
@@ -24,6 +25,7 @@ class AdminUsers {
               id: true,
               email: true,
               password: true,
+              adminId: true,
             },
           });
 
@@ -69,9 +71,16 @@ class AdminUsers {
 
           const { password, ...adminDataWithoutPassword } = loggedInUser;
 
+          // update the session
+          const lastActiveTime = await session(
+            loggedInUser.adminId,
+            loggedInUser.id
+          );
+
           response.success(res, "Users fetched", {
             ...adminDataWithoutPassword,
             users: usersWithCampaigns,
+            lastActiveTime,
           });
         } else {
           response.error(res, "User not active");

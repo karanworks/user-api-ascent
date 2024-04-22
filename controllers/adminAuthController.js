@@ -3,6 +3,8 @@ const prisma = new PrismaClient();
 const response = require("../utils/response");
 const getLoggedInUser = require("../utils/getLoggedInUser");
 const getMenus = require("../utils/getMenus");
+const getToken = require("../utils/getToken");
+const session = require("../utils/session");
 
 class AdminAuthController {
   async userRegisterPost(req, res) {
@@ -166,6 +168,9 @@ class AdminAuthController {
           secure: true,
         });
 
+        // creating a session
+        session(updatedAdmin.adminId, updatedAdmin.id);
+
         response.success(res, "User logged in!", {
           ...adminDataWithoutPassword,
           users: allUsers,
@@ -173,7 +178,7 @@ class AdminAuthController {
         });
       } else {
         // res.status(400).json({ message: "Wrong password!", status: "failure" });
-        response.error(res, "Wrong password!");
+        response.error(res, "Wrong credentials!");
       }
     } catch (error) {
       console.log("error while loggin in user ", error);
@@ -404,8 +409,23 @@ class AdminAuthController {
   }
   async adminLogoutGet(req, res) {
     try {
-      res.clearCookie("token");
-      response.success(res, "User logged out successflly!");
+      const loggedInUser = await getLoggedInUser(req, res);
+
+      if (loggedInUser) {
+        await prisma.user.update({
+          where: {
+            id: parseInt(loggedInUser.id),
+          },
+          data: {
+            isActive: 0,
+          },
+        });
+
+        res.clearCookie("token");
+        response.success(res, "User logged out successflly!");
+      } else {
+        response.error(res, "User not logged in!");
+      }
     } catch (error) {
       console.log("error while loggin in user ", error);
     }

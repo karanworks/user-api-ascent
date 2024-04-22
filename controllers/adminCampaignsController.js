@@ -2,6 +2,7 @@ const { PrismaClient } = require("@prisma/client");
 const prisma = new PrismaClient();
 const response = require("../utils/response");
 const getToken = require("../utils/getToken");
+const session = require("../utils/session");
 
 class AdminCampaignsController {
   async adminCampaignsGet(req, res) {
@@ -24,6 +25,7 @@ class AdminCampaignsController {
               id: true,
               email: true,
               password: true,
+              adminId: true,
               campaigns: {
                 select: {
                   id: true,
@@ -38,8 +40,15 @@ class AdminCampaignsController {
 
           const { password, ...adminDataWithoutPassword } = loggedInUser;
 
+          // update the session
+          const lastActiveTime = await session(
+            loggedInUser.adminId,
+            loggedInUser.id
+          );
+
           response.success(res, "Campaigns fetched", {
             ...adminDataWithoutPassword,
+            lastActiveTime,
           });
         } else {
           response.error(res, "User not active!");
