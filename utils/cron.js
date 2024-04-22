@@ -3,7 +3,7 @@ const { PrismaClient } = require("@prisma/client");
 const prisma = new PrismaClient();
 
 const cronJob = cron.schedule(
-  "*/5 * * * * *",
+  "0 */2 * * *", // 2 hours
   async () => {
     const sessions = await prisma.session.findMany({});
     const inactiveTimeLimit = 30; // in seconds
