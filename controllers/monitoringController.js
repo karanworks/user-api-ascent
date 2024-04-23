@@ -55,8 +55,8 @@ class MonitoringController {
         return;
       }
 
-      await Promise.all(
-        assignedCampaigns.map(async (assignedCampaign) => {
+      for (const assignedCampaign of assignedCampaigns) {
+        try {
           const campaign = await prisma.campaign.findFirst({
             where: {
               id: assignedCampaign.campaignId,
@@ -71,12 +71,14 @@ class MonitoringController {
 
           const userIndex = uniqueUsers.findIndex((u) => u.userId === user.id);
 
+          console.log("user monitoring get ->", user);
+
           if (userIndex === -1) {
             uniqueUsers.push({
-              userId: user.id,
-              name: user.username,
-              campaignId: [campaign.id],
-              campaignName: [campaign.campaignName],
+              userId: user?.id,
+              name: user?.username,
+              campaignId: [campaign?.id],
+              campaignName: [campaign?.campaignName],
             });
           } else {
             uniqueUsers[userIndex].campaignId.push(campaign.id);
@@ -88,15 +90,18 @@ class MonitoringController {
               uniqueUsers[userIndex].campaignName.push(campaign.campaignName);
             }
           }
-          return Promise.resolve(); // Ensure each iteration returns a promise
-        })
-      );
+        } catch (error) {
+          console.log("Error processing assigned campaign:", error);
+          // Handle error as needed
+        }
+      }
 
-      response.success(res, "Users fetched successflly", {
+      response.success(res, "Users fetched successfully", {
         users: uniqueUsers,
       });
     } catch (error) {
-      console.log("error in monitoring data", error);
+      console.log("Error in monitoring data:", error);
+      // Handle error as needed
     }
   }
 }

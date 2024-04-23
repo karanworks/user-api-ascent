@@ -3,10 +3,11 @@ const { PrismaClient } = require("@prisma/client");
 const prisma = new PrismaClient();
 
 const cronJob = cron.schedule(
+  // "*/10 * * * * *", // 10 seconds
   "0 */2 * * *", // 2 hours
   async () => {
     const sessions = await prisma.session.findMany({});
-    const inactiveTimeLimit = 30; // in seconds
+    const inactiveTimeLimit = 10; // in seconds
     const currentUTC = new Date(); // Get the current UTC time
 
     sessions.forEach(async (session) => {
