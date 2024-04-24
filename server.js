@@ -20,6 +20,7 @@ const updateSessionRouter = require("./routes/updateSession");
 // cookie parser
 const cookieParser = require("cookie-parser");
 const roleRouter = require("./routes/roles");
+const LoginActivityRouter = require("./routes/LoginActivity");
 
 // parsing json
 app.use(express.json());
@@ -63,6 +64,7 @@ app.use("/", crmRouter);
 app.use("/", dispositionRouter);
 app.use("/", monitoringRouter);
 app.use("/", updateSessionRouter);
+app.use("/", LoginActivityRouter);
 
 app.listen(process.env.PORT || 3001, () => {
   console.log(`Server listening at port no -> ${process.env.PORT}`);

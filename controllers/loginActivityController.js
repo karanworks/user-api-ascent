@@ -4,8 +4,8 @@ const getToken = require("../utils/getToken");
 const session = require("../utils/session");
 const prisma = new PrismaClient();
 
-class MonitoringController {
-  async monitoringGet(req, res) {
+class LoginActivityController {
+  async loginActivityGet(req, res) {
     try {
       const token = await getToken(req, res);
 
@@ -24,7 +24,7 @@ class MonitoringController {
 
           response.success(
             res,
-            "nothing to do in monitoringGet api, will do something in future"
+            "nothing to do in loginActivity get api, will do something in future"
           );
         } else {
           response.error(res, "User not active");
@@ -33,11 +33,11 @@ class MonitoringController {
         response.error(res, "User not logged in!");
       }
     } catch (error) {
-      console.log("error in get monitoring data ->", error);
+      console.log("error in get loginactivity get ->", error);
     }
   }
 
-  async monitoringData(req, res) {
+  async loginActivityDataPost(req, res) {
     try {
       const { campaigns } = req.body;
       const uniqueUsers = [];
@@ -71,12 +71,21 @@ class MonitoringController {
 
           const userIndex = uniqueUsers.findIndex((u) => u.userId === user.id);
 
+          // login activity (login, logout timing)
+          const loginActivity = await prisma.loginActivity.findFirst({
+            where: {
+              userId: user?.id,
+            },
+          });
+
           if (userIndex === -1) {
             uniqueUsers.push({
               userId: user?.id,
               name: user?.username,
               campaignId: [campaign?.id],
               campaignName: [campaign?.campaignName],
+              loginTime: loginActivity?.loginTime || null,
+              logoutTime: loginActivity?.logoutTime || null,
             });
           } else {
             uniqueUsers[userIndex].campaignId.push(campaign.id);
@@ -93,13 +102,15 @@ class MonitoringController {
         }
       }
 
+      console.log("unique users ->", uniqueUsers);
+
       response.success(res, "Users fetched successfully", {
         users: uniqueUsers,
       });
     } catch (error) {
-      console.log("Error in monitoring data:", error);
+      console.log("error in login activity data post -> ", error);
     }
   }
 }
 
-module.exports = new MonitoringController();
+module.exports = new LoginActivityController();

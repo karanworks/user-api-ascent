@@ -201,7 +201,7 @@ model LoginActivity {
   id Int @id @default(autoincrement())
   userId Int
   loginTime DateTime
-  logoutTime DateTime
+  logoutTime DateTime?
   createdAt DateTime @default(now())
   updatedAt DateTime @default(now())
 }

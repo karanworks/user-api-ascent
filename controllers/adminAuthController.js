@@ -156,6 +156,35 @@ class AdminAuthController {
           },
         });
 
+        const loginActivityAlreadyExists = await prisma.loginActivity.findFirst(
+          {
+            where: {
+              userId: updatedAdmin.id,
+            },
+          }
+        );
+
+        if (loginActivityAlreadyExists) {
+          await prisma.loginActivity.update({
+            where: {
+              id: loginActivityAlreadyExists.id,
+              userId: updatedAdmin.id,
+            },
+            data: {
+              loginTime: new Date(),
+              logoutTime: null,
+            },
+          });
+        } else {
+          await prisma.loginActivity.create({
+            data: {
+              userId: updatedAdmin.id,
+              loginTime: new Date(),
+              logoutTime: null,
+            },
+          });
+        }
+
         const menus = await getMenus(req, res, updatedAdmin);
 
         const { password, ...adminDataWithoutPassword } = updatedAdmin;
@@ -420,6 +449,24 @@ class AdminAuthController {
             isActive: 0,
           },
         });
+
+        const loginActivity = await prisma.loginActivity.findFirst({
+          where: {
+            userId: loggedInUser.id,
+          },
+        });
+
+        if (loginActivity) {
+          // update logout time
+          await prisma.loginActivity.update({
+            where: {
+              id: loginActivity.id,
+            },
+            data: {
+              logoutTime: new Date(),
+            },
+          });
+        }
 
         res.clearCookie("token");
         response.success(res, "User logged out successflly!");
