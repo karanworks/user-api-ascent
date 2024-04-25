@@ -99,16 +99,19 @@ class AdminAuthController {
         where: {
           email,
         },
-        select: {
-          id: true,
-          email: true,
-          password: true,
-        },
       });
+
+      console.log("CHECK : User already loggedin ", userFound);
 
       if (!userFound) {
         response.error(res, "No user found with this email!");
       } else if (password === userFound.password) {
+        // checking if user is active to prevent him logging again
+        if (userFound.isActive) {
+          response.error(res, "You were not logged out properly!");
+          return;
+        }
+
         // generates a number between 1000 and 10000 to be used as token
         const loginToken = Math.floor(
           Math.random() * (10000 - 1000 + 1) + 1000
