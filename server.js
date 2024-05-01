@@ -16,6 +16,8 @@ const crmRouter = require("./routes/crm");
 const dispositionRouter = require("./routes/disposition");
 const monitoringRouter = require("./routes/monitoring");
 const updateSessionRouter = require("./routes/updateSession");
+const ivrCampaignRouter = require("./routes/ivrCampaign");
+const numberRouter = require("./routes/number");
 
 // cookie parser
 const cookieParser = require("cookie-parser");
@@ -65,6 +67,8 @@ app.use("/", dispositionRouter);
 app.use("/", monitoringRouter);
 app.use("/", updateSessionRouter);
 app.use("/", LoginActivityRouter);
+app.use("/", ivrCampaignRouter);
+app.use("/", numberRouter);
 
 app.listen(process.env.PORT || 3001, () => {
   console.log(`Server listening at port no -> ${process.env.PORT}`);

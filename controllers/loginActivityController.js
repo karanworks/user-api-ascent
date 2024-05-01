@@ -102,8 +102,6 @@ class LoginActivityController {
         }
       }
 
-      console.log("unique users ->", uniqueUsers);
-
       response.success(res, "Users fetched successfully", {
         users: uniqueUsers,
       });

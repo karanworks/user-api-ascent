@@ -101,8 +101,6 @@ class AdminAuthController {
         },
       });
 
-      console.log("CHECK : User already loggedin ", userFound);
-
       if (!userFound) {
         response.error(res, "No user found with this email!");
       } else if (password === userFound.password) {

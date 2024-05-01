@@ -156,7 +156,7 @@ class DispositionController {
         response.error(res, "No logged in user!");
       }
     } catch (error) {
-      console.log("error while creating disposition ->", error);
+      console.log("error while deleting disposition ->", error);
     }
   }
 }

@@ -22,6 +22,8 @@ model User {
   agentMobile String? @unique
   token    Int      @default(0)
   campaigns Campaign[] 
+  ivrCampaigns IvrCampaign[]
+  numbers Number[]
   users   Json?
   roleId Int
   adminId Int?
@@ -69,6 +71,31 @@ model CRMField{
   updatedAt DateTime @default(now())
 
 }
+
+model IvrCampaign {
+  id Int @id @default(autoincrement())
+  ivrCampaignName String
+  ivrCampaignDescription String
+  numbers Number[]
+  admin User? @relation(fields: [adminId], references: [id])
+  adminId Int?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now())
+}
+
+model Number{
+  id Int @id @default(autoincrement())
+  name String
+  number String
+  department String
+  ivrCampaignId Int?
+  ivrCampaign IvrCampaign? @relation(fields: [ivrCampaignId], references: [id])
+  user User? @relation(fields: [createdBy], references: [id])
+  createdBy Int?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now())
+}
+
 
 model Menu{
   id Int @id @default(autoincrement())
