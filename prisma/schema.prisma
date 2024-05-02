@@ -24,6 +24,7 @@ model User {
   campaigns Campaign[] 
   ivrCampaigns IvrCampaign[]
   numbers Number[]
+  speeches Speech[]
   users   Json?
   roleId Int
   adminId Int?
@@ -77,6 +78,7 @@ model IvrCampaign {
   ivrCampaignName String
   ivrCampaignDescription String
   numbers Number[]
+  speeches Speech[]
   admin User? @relation(fields: [adminId], references: [id])
   adminId Int?
   createdAt DateTime @default(now())
@@ -88,6 +90,18 @@ model Number{
   name String
   number String
   department String
+  ivrCampaignId Int?
+  ivrCampaign IvrCampaign? @relation(fields: [ivrCampaignId], references: [id])
+  user User? @relation(fields: [createdBy], references: [id])
+  createdBy Int?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now())
+}
+model Speech{
+  id Int @id @default(autoincrement())
+  title String
+  speechText String?
+  speechAudio String?
   ivrCampaignId Int?
   ivrCampaign IvrCampaign? @relation(fields: [ivrCampaignId], references: [id])
   user User? @relation(fields: [createdBy], references: [id])

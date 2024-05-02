@@ -18,6 +18,7 @@ const monitoringRouter = require("./routes/monitoring");
 const updateSessionRouter = require("./routes/updateSession");
 const ivrCampaignRouter = require("./routes/ivrCampaign");
 const numberRouter = require("./routes/number");
+const speechRouter = require("./routes/speech");
 
 // cookie parser
 const cookieParser = require("cookie-parser");
@@ -69,6 +70,7 @@ app.use("/", updateSessionRouter);
 app.use("/", LoginActivityRouter);
 app.use("/", ivrCampaignRouter);
 app.use("/", numberRouter);
+app.use("/", speechRouter);
 
 app.listen(process.env.PORT || 3001, () => {
   console.log(`Server listening at port no -> ${process.env.PORT}`);
