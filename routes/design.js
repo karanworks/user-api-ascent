@@ -1,7 +1,7 @@
 const express = require("express");
 const DesignRouter = express.Router({ mergeParams: true });
-const CampaignController = require("../controllers/campaignController");
+const DesignController = require("../controllers/designController");
 
-DesignRouter.get("/ivr-design", CampaignController.campaignCreatePost);
+DesignRouter.get("/ivr-design", DesignController.getDesign);
 
 module.exports = DesignRouter;

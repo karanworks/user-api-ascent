@@ -2,8 +2,9 @@ const { PrismaClient } = require("@prisma/client");
 const prisma = new PrismaClient();
 const response = require("../utils/response");
 const getToken = require("../utils/getToken");
+const session = require("../utils/session");
 class DesignController {
-  async getIvrDesign(req, res) {
+  async getDesign(req, res) {
     try {
       const token = await getToken(req, res);
 
