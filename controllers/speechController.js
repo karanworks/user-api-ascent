@@ -4,6 +4,8 @@ const getLoggedInUser = require("../utils/getLoggedInUser");
 const response = require("../utils/response");
 const session = require("../utils/session");
 const getToken = require("../utils/getToken");
+const path = require("path");
+const fs = require("fs");
 
 class SpeechController {
   async getSpeeches(req, res) {
@@ -43,9 +45,20 @@ class SpeechController {
           // update the session
           session(loggedInUser.adminId, loggedInUser.id);
 
-          response.success(res, "Speeches fetched", {
-            ...adminDataWithoutPassword,
-          });
+          // Read file and convert to blob for each speechAudio
+          // for (const ivrCampaign of adminDataWithoutPassword.ivrCampaigns) {
+          //   for (const speech of ivrCampaign.speeches) {
+          //     const filePath = path.join(
+          //       __dirname,
+          //       "../SpeechAudiosUploads",
+          //       speech.speechAudio
+          //     );
+          //     const blob = fs.readFileSync(filePath);
+          //     speech.speechAudio = blob.toString("base64");
+          //   }
+          // }
+
+          response.success(res, "Speeches fetched", adminDataWithoutPassword);
         } else {
           response.error(res, "User not active");
         }
@@ -59,9 +72,7 @@ class SpeechController {
 
   async createSpeechPost(req, res) {
     try {
-      const { title, speechText, speechAudio, ivrCampaignId } = req.body;
-
-      console.log("speech form data ->", title, speechText, speechAudio);
+      const { title, speechText, speechAudioName, ivrCampaignId } = req.body;
 
       const loggedInUser = await getLoggedInUser(req, res);
 
@@ -85,8 +96,8 @@ class SpeechController {
             data: {
               title,
               speechText,
-              speechAudio,
-              ivrCampaignId,
+              speechAudio: speechAudioName,
+              ivrCampaignId: parseInt(ivrCampaignId),
               createdBy: loggedInUser.id,
             },
           });
@@ -103,7 +114,7 @@ class SpeechController {
 
   async updateSpeechPatch(req, res) {
     try {
-      const { title, speechText, speechAudio } = req.body;
+      const { title, speechText, speechAudioName } = req.body;
       const { speechId, ivrCampaignId } = req.params;
 
       const loggedInUser = await getLoggedInUser(req, res);
@@ -144,7 +155,7 @@ class SpeechController {
             data: {
               title,
               speechText,
-              speechAudio,
+              speechAudio: speechAudioName,
             },
           });
 

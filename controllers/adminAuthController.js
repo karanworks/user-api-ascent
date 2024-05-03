@@ -95,6 +95,8 @@ class AdminAuthController {
       const { email, password } = req.body;
       const userIp = req.socket.remoteAddress;
 
+      console.log("email", email, "password", password);
+
       let userFound = await prisma.user.findFirst({
         where: {
           email,
