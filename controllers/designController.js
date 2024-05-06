@@ -34,6 +34,7 @@ class DesignController {
                   speeches: true,
                 },
               },
+              designs: true,
             },
           });
 
@@ -53,6 +54,41 @@ class DesignController {
       }
     } catch (error) {
       console.log("error while getting IVR Design data", error);
+    }
+  }
+
+  async createDesignPost(req, res) {
+    try {
+      const { audioText, audioFile, ivrCampaignId, key, parentId } = req.body;
+
+      const token = await getToken(req, res);
+
+      console.log("parent here ->", parentId);
+
+      // admin that is creating the user
+      const adminUser = await prisma.user.findFirst({
+        where: {
+          token: parseInt(token),
+        },
+      });
+
+      if (adminUser) {
+        const newIvrDesign = await prisma.ivrDesign.create({
+          data: {
+            audioText,
+            ivrCampaignId,
+            key,
+            createdBy: adminUser.id,
+            parentId: parentId ? parentId : null,
+          },
+        });
+
+        response.success(res, "new ivr design created!", newIvrDesign);
+      } else {
+        response.error(res, "User doesn't exist!");
+      }
+    } catch (error) {
+      console.log("error while creating ivr design ->", error);
     }
   }
 }

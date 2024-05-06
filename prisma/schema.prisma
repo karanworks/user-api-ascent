@@ -25,6 +25,7 @@ model User {
   ivrCampaigns IvrCampaign[]
   numbers Number[]
   speeches Speech[]
+  designs IvrDesign[]
   users   Json?
   roleId Int
   adminId Int?
@@ -83,6 +84,23 @@ model IvrCampaign {
   adminId Int?
   createdAt DateTime @default(now())
   updatedAt DateTime @default(now())
+}
+
+model IvrDesign{
+  id Int @id @default(autoincrement())
+  audioText String?
+  audioFile String?
+  key String?
+  items Json?
+  ivrCampaignId Int?
+  department String?
+  number String?
+  parentId String?
+  createdBy Int?
+  admin User? @relation(fields: [createdBy], references: [id])
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now())
+
 }
 
 model Number{
