@@ -38,6 +38,28 @@ class DesignController {
             },
           });
 
+          // filter parent designs
+          const parentDesigns = loggedInUser.designs.filter((design) => {
+            return !design.parentId;
+          });
+
+          const parentDesignWithItems = await Promise.all(
+            parentDesigns.map(async (design) => {
+              const items = await prisma.ivrDesign.findMany({
+                where: {
+                  parentId: design.id,
+                },
+              });
+
+              return {
+                ...design,
+                items,
+              };
+            })
+          );
+
+          console.log("parent with items ->", parentDesignWithItems);
+
           const { password, ...adminDataWithoutPassword } = loggedInUser;
 
           // update the session
@@ -45,6 +67,7 @@ class DesignController {
 
           response.success(res, "IVR Design fetched", {
             ...adminDataWithoutPassword,
+            designs: parentDesignWithItems,
           });
         } else {
           response.error(res, "User not active");
@@ -63,7 +86,7 @@ class DesignController {
 
       const token = await getToken(req, res);
 
-      console.log("parent here ->", parentId);
+      console.log("audio text here ->", audioText);
 
       // admin that is creating the user
       const adminUser = await prisma.user.findFirst({
@@ -82,6 +105,8 @@ class DesignController {
             parentId: parentId ? parentId : null,
           },
         });
+
+        console.log("newly created ivr design ->", newIvrDesign);
 
         response.success(res, "new ivr design created!", newIvrDesign);
       } else {

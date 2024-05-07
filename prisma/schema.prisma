@@ -95,7 +95,7 @@ model IvrDesign{
   ivrCampaignId Int?
   department String?
   number String?
-  parentId String?
+  parentId Int?
   createdBy Int?
   admin User? @relation(fields: [createdBy], references: [id])
   createdAt DateTime @default(now())
