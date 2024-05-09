@@ -93,8 +93,8 @@ model IvrDesign{
   key String?
   items Json?
   ivrCampaignId Int?
-  department String?
-  number String?
+  number Json?
+  isNumber Boolean
   parentId Int?
   createdBy Int?
   admin User? @relation(fields: [createdBy], references: [id])
