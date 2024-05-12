@@ -199,6 +199,64 @@ class DesignController {
     }
   }
 
+  async designUpdatePatch(req, res) {
+    try {
+      const { audioText, audioFile } = req.body;
+      const { designId } = req.params;
+
+      const token = await getToken(req, res);
+
+      console.log("AUDIO TEXT ->", audioText, "DESIGN ID ->", designId);
+
+      // admin that is creating the campaign
+      const adminUser = await prisma.user.findFirst({
+        where: {
+          token: parseInt(token),
+        },
+      });
+
+      const designFound = await prisma.ivrDesign.findFirst({
+        where: {
+          id: parseInt(designId),
+        },
+      });
+
+      const alreadyExists = await prisma.ivrDesign.findFirst({
+        where: {
+          createdBy: adminUser.id,
+          audioText,
+        },
+      });
+
+      if (designFound) {
+        if (alreadyExists) {
+          response.error(
+            res,
+            "Design with same name already exists!",
+            alreadyExists
+          );
+        } else {
+          const updatedDesign = await prisma.ivrDesign.update({
+            where: {
+              id: parseInt(designId),
+            },
+            data: {
+              audioText,
+            },
+          });
+
+          response.success(res, "Design updated successfully", {
+            updatedDesign,
+          });
+        }
+      } else {
+        response.error(res, "Design not found!");
+      }
+    } catch (error) {
+      console.log("error while updating design ", error);
+    }
+  }
+
   async designRemoveDelete(req, res) {
     try {
       const { designId } = req.params;
