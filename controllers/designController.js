@@ -206,8 +206,6 @@ class DesignController {
 
       const token = await getToken(req, res);
 
-      console.log("AUDIO TEXT ->", audioText, "DESIGN ID ->", designId);
-
       // admin that is creating the campaign
       const adminUser = await prisma.user.findFirst({
         where: {
@@ -220,6 +218,24 @@ class DesignController {
           id: parseInt(designId),
         },
       });
+
+      async function fetchItemsRecursively(designId) {
+        const items = await prisma.ivrDesign.findMany({
+          where: {
+            parentId: designId,
+          },
+        });
+
+        // Recursively fetch items for each item
+        const nestedItems = await Promise.all(
+          items.map(async (item) => {
+            item.items = await fetchItemsRecursively(item.id);
+            return item;
+          })
+        );
+
+        return nestedItems;
+      }
 
       const alreadyExists = await prisma.ivrDesign.findFirst({
         where: {
@@ -245,8 +261,13 @@ class DesignController {
             },
           });
 
+          const updatedDesignWithItems = {
+            ...updatedDesign,
+            items: await fetchItemsRecursively(updatedDesign.id),
+          };
+
           response.success(res, "Design updated successfully", {
-            updatedDesign,
+            updatedDesign: updatedDesignWithItems,
           });
         }
       } else {
