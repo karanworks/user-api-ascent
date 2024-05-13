@@ -94,6 +94,8 @@ class DesignController {
 
       const token = await getToken(req, res);
 
+      console.log("RECEVING KEY WHILE CREATING NUMBER ->", key);
+
       // admin that is creating the user
       const adminUser = await prisma.user.findFirst({
         where: {
@@ -127,18 +129,18 @@ class DesignController {
 
       if (adminUser) {
         if (number) {
-          const parent =
-            parentId &&
-            (await prisma.ivrDesign.findFirst({
-              where: {
-                parentId: parentId,
-                isNumber: false,
-              },
-            }));
-          if (parent) {
-            response.error(res, "Keys bindings already exists!");
-            return;
-          }
+          // const parent =
+          //   parentId &&
+          //   (await prisma.ivrDesign.findFirst({
+          //     where: {
+          //       parentId: parentId,
+          //       isNumber: false,
+          //     },
+          //   }));
+          // if (parent) {
+          //   response.error(res, "Keys bindings already exists!");
+          //   return;
+          // }
 
           const numberArray = number?.map((number) => {
             return {
@@ -159,24 +161,26 @@ class DesignController {
             })
           );
 
+          console.log("NUMBER DESIGN ->", newIvrDesign);
+
           response.success(res, "new ivr design created!", {
             parentId,
             numbers: newIvrDesign,
           });
         } else {
-          const parent =
-            parentId &&
-            (await prisma.ivrDesign.findFirst({
-              where: {
-                parentId: parentId,
-                isNumber: true,
-              },
-            }));
+          // const parent =
+          //   parentId &&
+          //   (await prisma.ivrDesign.findFirst({
+          //     where: {
+          //       parentId: parentId,
+          //       isNumber: true,
+          //     },
+          //   }));
 
-          if (parent) {
-            response.error(res, "Number binding already exists!");
-            return;
-          }
+          // if (parent) {
+          //   response.error(res, "Number binding already exists!");
+          //   return;
+          // }
 
           const newIvrDesign = await prisma.ivrDesign.create({
             data: {
