@@ -8,5 +8,9 @@ DesignRouter.delete(
   "/ivr-design/:designId/delete",
   DesignController.designRemoveDelete
 );
+DesignRouter.patch(
+  "/ivr-design/:designId/edit",
+  DesignController.designUpdatePatch
+);
 
 module.exports = DesignRouter;

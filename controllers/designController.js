@@ -119,9 +119,7 @@ class DesignController {
         });
 
         const itemBindedWithSameKey = parentItemsKeys.includes(key);
-        console.log("CHECKING BINDING ->", key);
         if (itemBindedWithSameKey) {
-          console.log("YES IT INCLUDES");
           response.error(res, "Item already exists on same key");
           return;
         }
@@ -142,17 +140,29 @@ class DesignController {
             return;
           }
 
-          const newIvrDesign = await prisma.ivrDesign.create({
-            data: {
+          const numberArray = number?.map((number) => {
+            return {
               ivrCampaignId,
               createdBy: adminUser.id,
               parentId: parentId ? parentId : null,
               number,
               isNumber: true,
-            },
+              key: key ? key : null,
+            };
           });
 
-          response.success(res, "new ivr design created!", newIvrDesign);
+          const newIvrDesign = await Promise.all(
+            numberArray.map(async (number) => {
+              return await prisma.ivrDesign.create({
+                data: number,
+              });
+            })
+          );
+
+          response.success(res, "new ivr design created!", {
+            parentId,
+            numbers: newIvrDesign,
+          });
         } else {
           const parent =
             parentId &&
@@ -189,41 +199,67 @@ class DesignController {
     }
   }
 
-  // async designRemoveDelete(req, res) {
-  //   try {
-  //     const { designId } = req.params;
+  async designUpdatePatch(req, res) {
+    try {
+      const { audioText, audioFile } = req.body;
+      const { designId } = req.params;
 
-  //     console.log("IVR DESIGN API DELETE API CALLED");
-  //     // finding campaign from campaignId
-  //     const designFound = await prisma.ivrDesign.findFirst({
-  //       where: {
-  //         id: parseInt(designId),
-  //       },
-  //     });
+      const token = await getToken(req, res);
 
-  //     if (designFound) {
-  //       if (!designFound.parentId) {
-  //         const childs = await prisma.ivrDesign.findMany({
-  //           where: {
-  //             parentId: designFound.id,
-  //           },
-  //         });
-  //       }
+      console.log("AUDIO TEXT ->", audioText, "DESIGN ID ->", designId);
 
-  //       response.success(res, "Design deleted successfully");
-  //     } else {
-  //       response.error(res, "Design does not exist!");
-  //     }
-  //   } catch (error) {
-  //     console.log("error while deleting campaign ", error);
-  //   }
-  // }
+      // admin that is creating the campaign
+      const adminUser = await prisma.user.findFirst({
+        where: {
+          token: parseInt(token),
+        },
+      });
+
+      const designFound = await prisma.ivrDesign.findFirst({
+        where: {
+          id: parseInt(designId),
+        },
+      });
+
+      const alreadyExists = await prisma.ivrDesign.findFirst({
+        where: {
+          createdBy: adminUser.id,
+          audioText,
+        },
+      });
+
+      if (designFound) {
+        if (alreadyExists) {
+          response.error(
+            res,
+            "Design with same name already exists!",
+            alreadyExists
+          );
+        } else {
+          const updatedDesign = await prisma.ivrDesign.update({
+            where: {
+              id: parseInt(designId),
+            },
+            data: {
+              audioText,
+            },
+          });
+
+          response.success(res, "Design updated successfully", {
+            updatedDesign,
+          });
+        }
+      } else {
+        response.error(res, "Design not found!");
+      }
+    } catch (error) {
+      console.log("error while updating design ", error);
+    }
+  }
 
   async designRemoveDelete(req, res) {
     try {
       const { designId } = req.params;
-
-      console.log("DESIGN ID ->", designId);
 
       // finding campaign from campaignId
       const designFound = await prisma.ivrDesign.findFirst({
