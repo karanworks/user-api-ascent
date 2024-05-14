@@ -28,6 +28,8 @@ const LoginActivityRouter = require("./routes/LoginActivity");
 
 // parsing json
 app.use(express.json());
+// to play recordings/speech
+app.use("/audio", express.static("SpeechAudiosUploads"));
 
 // cors connection
 app.use(

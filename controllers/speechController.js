@@ -45,19 +45,6 @@ class SpeechController {
           // update the session
           session(loggedInUser.adminId, loggedInUser.id);
 
-          // Read file and convert to blob for each speechAudio
-          // for (const ivrCampaign of adminDataWithoutPassword.ivrCampaigns) {
-          //   for (const speech of ivrCampaign.speeches) {
-          //     const filePath = path.join(
-          //       __dirname,
-          //       "../SpeechAudiosUploads",
-          //       speech.speechAudio
-          //     );
-          //     const blob = fs.readFileSync(filePath);
-          //     speech.speechAudio = blob.toString("base64");
-          //   }
-          // }
-
           response.success(res, "Speeches fetched", adminDataWithoutPassword);
         } else {
           response.error(res, "User not active");
@@ -72,7 +59,13 @@ class SpeechController {
 
   async createSpeechPost(req, res) {
     try {
-      const { title, speechText, speechAudioName, ivrCampaignId } = req.body;
+      const {
+        title,
+        speechText,
+        speechAudioName,
+        ivrCampaignId,
+        fileNameWithTime,
+      } = req.body;
 
       const loggedInUser = await getLoggedInUser(req, res);
 
@@ -96,6 +89,9 @@ class SpeechController {
             data: {
               title,
               speechText,
+              url:
+                speechAudioName &&
+                `${process.env.SERVER_URL}/audio/${fileNameWithTime}`,
               speechAudio: speechAudioName,
               ivrCampaignId: parseInt(ivrCampaignId),
               createdBy: loggedInUser.id,

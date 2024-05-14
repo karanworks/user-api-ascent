@@ -120,6 +120,7 @@ model Speech{
   title String
   speechText String?
   speechAudio String?
+  url String?
   ivrCampaignId Int?
   ivrCampaign IvrCampaign? @relation(fields: [ivrCampaignId], references: [id])
   user User? @relation(fields: [createdBy], references: [id])

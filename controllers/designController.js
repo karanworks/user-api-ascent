@@ -94,7 +94,6 @@ class DesignController {
 
       const token = await getToken(req, res);
 
-      console.log("RECEVING KEY WHILE CREATING NUMBER ->", key);
 
       // admin that is creating the user
       const adminUser = await prisma.user.findFirst({
